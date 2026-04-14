@@ -1,0 +1,43 @@
+<div
+    class="min-h-screen bg-gradient-to-br from-[#008d92] via-[#64b0a8] to-[#99bfb5] flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+        <h2 class="text-2xl font-bold text-[#0a6067] mb-6 text-center">Σ11</h2>
+        <p class="text-center text-[#008d92] mb-6">Ingresa tus credenciales</p>
+        <form class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-[#008d92] mb-1">Usuario</label>
+                <input type="text" [(ngModel)] ="username" name = "username" required
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#64b0a8] focus:border-[#64b0a8] outline-none transition-all placeholder:text-gray-400"
+                    placeholder="Ingresa tu usuario" />
+            </div>
+
+            <div class="relative">
+                <label class="block text-sm font-medium text-[#008d92] mb-1">Password</label>
+                <input id="password" [type]="showPassword ? 'text' : 'password'" [(ngModel)] ="password" name = "password" required
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#64b0a8] focus:border-[#64b0a8] outline-none transition-all placeholder:text-gray-400"
+                    placeholder="••••••••" />
+                <button type="button" class="absolute top-1/2 right-0 pr-3 flex items-center"
+                    (click)="togglePassword()" aria-label="Mostrar contraseña">
+                    <!-- Ojo abierto -->
+                    <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <!-- Ojo cerrado -->
+                    <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 012.294-3.344M6.18 6.18A9.97 9.97 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.05 10.05 0 01-1.223 2.506M3 3l18 18" />
+                    </svg>
+                </button>
+            </div>
+            <button type="button" (click)="onSubmit()"
+                class="w-full bg-[#008d92] hover:bg-[#0a6067] text-white font-medium py-2.5 rounded-lg transition-colors shadow-md">
+                Iniciar Sesión
+            </button>
+        </form>
+    </div>
+</div>

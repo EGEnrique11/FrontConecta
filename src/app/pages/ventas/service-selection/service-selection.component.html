@@ -1,0 +1,42 @@
+<div>
+    <h2 class="text-xl font-bold">Registrar Servicio</h2>
+</div>
+<div>
+    <form action="">
+        <div>
+            <div>
+                <label for="planInternet" class="block text-[#0a6067] text-lg font-bold mb-2">Eliga el plan:</label>
+                <input type="text" id="planInternet" placeholder="Ingrese su apellido paterno"
+                class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+                px-3 text-[var(--text-color-blue-blanco)] placeholder-gray-500 leading-tight focus:outline-none
+                focus:border-indigo-500 focus:shadow-outline">
+            </div>
+        </div>
+        <div>
+            <div class="flex items-center space-x-4">
+                <mat-form-field>
+                    <mat-label>Fecha de Instalación</mat-label>
+                    <input matInput [matDatepicker]="pickerInstalacion" (click)="pickerInstalacion.open()" [formControl]="fechaInstalacion"
+                        [matDatepickerFilter]="dateFilterInstalacion" [min]="minDateInstalacion"
+                        [max]="maxDateInstalacion" (dateChange)="onFechaInstalacionChange($event)" readonly>
+                    <mat-datepicker-toggle matSuffix [for]="pickerInstalacion"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerInstalacion></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field>
+                    <mat-label>Turno de Instalación</mat-label>
+                    <mat-select [formControl]="turnoSeleccionado" (selectionChange)="onTurnoChange($event)">
+                        <mat-option *ngFor="let turno of turnosDisponibles" [value]="turno.value">
+                            {{turno.viewValue}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div>
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Registrar Servicio
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

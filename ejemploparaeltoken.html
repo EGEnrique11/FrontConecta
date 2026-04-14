@@ -1,0 +1,175 @@
+// auth.service.ts
+import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
+
+interface JwtPayload {
+  permissions: string[];
+  roles: string[];
+  sub: string;
+  iat: number;
+  exp: number;
+}
+
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private readonly TOKEN_KEY = 'auth_token';
+
+  constructor(private router: Router) {}
+
+  // Guarda el token en localStorage tras el login
+  setToken(token: string): void {
+    localStorage.setItem(this.TOKEN_KEY, token);
+  }
+
+  // Obtiene el token almacenado
+  getToken(): string | null {
+    return localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  // Elimina el token y redirige al login
+  logout(): void {
+    localStorage.removeItem(this.TOKEN_KEY);
+    this.router.navigate(['/auth/login']);
+  }
+
+  // Decodifica el payload del JWT
+  private decodeToken(): JwtPayload | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const payload = token.split('.')[1];
+      const decoded = atob(payload);
+      return JSON.parse(decoded) as JwtPayload;
+    } catch (e) {
+      console.error('Error decoding token', e);
+      return null;
+    }
+  }
+
+  // Comprueba si el token es válido y no está expirado
+  isLoggedIn(): boolean {
+    const decoded = this.decodeToken();
+    return !!decoded && decoded.exp * 1000 > Date.now();
+  }
+
+  // Devuelve los roles del usuario
+  getRoles(): string[] {
+    const decoded = this.decodeToken();
+    return decoded?.roles || [];
+  }
+}
+
+
+// auth.interceptor.ts
+import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { AuthService } from './auth.service';
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const authService = inject(AuthService);
+  const token = authService.getToken();
+  let cloned = req;
+
+  // Si hay token, añade cabecera Authorization
+  if (token) {
+    cloned = req.clone({
+      headers: req.headers.set('Authorization', `Bearer ${token}`)
+    });
+  }
+
+  return next(cloned).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 401 || error.status === 403) {
+        console.warn('Solicitud no autorizada, cerrando sesión.');
+        authService.logout();
+      }
+      return throwError(() => error);
+    })
+  );
+};
+
+
+// guards/auth.guard.ts
+import { CanMatchFn, Route, UrlSegment, UrlTree, Router } from '@angular/router';
+import { inject } from '@angular/core';
+import { AuthService } from '../auth.service';
+
+export const authGuard: CanMatchFn = (route: Route, segments: UrlSegment[]): boolean | UrlTree => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (authService.isLoggedIn()) {
+    return true;
+  }
+  // Redirige a login si no está autenticado
+  return router.createUrlTree(['/auth/login']);
+};
+
+
+// guards/role.guard.ts
+import { CanMatchFn, Route, UrlSegment, UrlTree, Router } from '@angular/router';
+import { inject } from '@angular/core';
+import { AuthService } from '../auth.service';
+
+export const roleGuard: CanMatchFn = (route: Route, segments: UrlSegment[]): boolean | UrlTree => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  const requiredRoles = route.data?.['roles'] as string[] || [];
+
+  const userRoles = authService.getRoles();
+  const hasRole = requiredRoles.some(r => userRoles.includes(r));
+
+  if (hasRole) {
+    return true;
+  }
+  // Redirige o muestra 'no autorizado'
+  return router.createUrlTree(['/auth/login']);
+};
+
+
+// app.routes.ts
+import { Routes } from '@angular/router';
+import { LoginComponent } from './auth/login.component';
+import { MenuComponent } from './menu/menu.component';
+import { AdminComponent } from './admin/admin.component';
+import { authGuard } from './guards/auth.guard';
+import { roleGuard } from './guards/role.guard';
+
+export const routes: Routes = [
+  { path: 'auth/login', component: LoginComponent },
+
+  // Ruta protegida: solo usuarios autenticados
+  {
+    path: 'menu',
+    component: MenuComponent,
+    canMatch: [authGuard]
+  },
+
+  // Ruta admin: autenticado + ROLE_ADMIN
+  {
+    path: 'admin',
+    component: AdminComponent,
+    canMatch: [authGuard, roleGuard],
+    data: { roles: ['ROLE_ADMIN'] }
+  },
+
+  { path: '**', redirectTo: 'auth/login' }
+];
+
+
+// main.ts (bootstrap funcional)
+import { bootstrapApplication } from '@angular/platform-browser';
+import { AppComponent } from './app/app.component';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+import { routes } from './app/app.routes';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideHttpClient(withInterceptors([authInterceptor])),
+    provideRouter(routes)
+  ]
+});

@@ -1,0 +1,76 @@
+<div class="p-6 bg-[#f6f4f0] min-h-screen">
+    <!-- Título -->
+    <h2 class="text-2xl font-bold text-[#0a6067] mb-6">Gestión de Clientes</h2>
+  
+    <!-- Filtros y Acciones -->
+    <div class="flex items-center space-x-4 mb-6">
+      <!-- Combo Box: Estado -->
+      <mat-form-field appearance="outline" class="w-64">
+        <mat-label>Estado</mat-label>
+        <mat-select [(value)]="estadoSeleccionado" (selectionChange)="buscarClientes()">
+          <mat-option *ngFor="let estado of estados" [value]="estado.value">
+            {{ estado.viewValue }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+  
+      <!-- Botón: Enviar Notificaciones -->
+      <button (click)="enviarNotificaciones()" 
+        class="bg-[#008d92] hover:bg-[#0a6067] text-white font-bold py-2 px-4 rounded shadow-md">
+        Enviar Notificaciones
+      </button>
+    </div>
+  
+    <!-- Tabla de Clientes -->
+    <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+      <table class="min-w-full text-left text-sm text-gray-500">
+        <thead class="bg-[#64b0a8] text-white">
+          <tr>
+            <th class="px-4 py-2">Cod Cliente</th>
+            <th class="px-4 py-2">Estado</th>
+            <th class="px-4 py-2">Nombre</th>
+            <th class="px-4 py-2">Correo</th>
+            <th class="px-4 py-2">Celular</th>
+            <th class="px-4 py-2">Dirección</th>
+            <th class="px-4 py-2">Servicio</th>
+            <th class="px-4 py-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cliente of clientes">
+            <td class="px-4 py-2">{{ cliente.codigo }}</td>
+            <td class="px-4 py-2">{{ cliente.estado }}</td>
+            <td class="px-4 py-2">{{ cliente.nombre }}</td>
+            <td class="px-4 py-2">{{ cliente.correo }}</td>
+            <td class="px-4 py-2">{{ cliente.celular }}</td>
+            <td class="px-4 py-2">{{ cliente.direccion }}</td>
+            <td class="px-4 py-2">{{ cliente.servicio }}</td>
+            <td class="px-4 py-2 space-x-2">
+              <button (click)="actualizarCliente(cliente)" 
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">
+                Actualizar
+              </button>
+              <button (click)="eliminarCliente(cliente)" 
+                class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
+                Eliminar
+              </button>
+              <button (click)="enviarNotificacion(cliente)" 
+                class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">
+                Notificar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  
+    <!-- Paginación -->
+    <mat-paginator [length]="totalClientes" [pageSize]="10" [pageSizeOptions]="[5, 10, 20]" 
+      (page)="cambiarPagina($event)">
+    </mat-paginator>
+  
+    <!-- Total de Clientes -->
+    <div class="mt-4 text-right text-[#0a6067] font-bold">
+      Total de Clientes: {{ totalClientes }}
+    </div>
+  </div>

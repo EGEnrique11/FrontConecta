@@ -1,0 +1,215 @@
+<div>
+    <h2 class="text-xl font-bold">Registro de Clientes</h2>
+</div>
+<div>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6 p-4">
+        <!-- Tipo de Documento -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium">Tipo de Documento</label>
+          <select formControlName="tipoDocumento" class="mt-1 block w-full p-2 border rounded">
+            <option value="" disabled>Seleccione...</option>
+            <option *ngFor="let t of tiposDocumento" [value]="t">{{ t }}</option>
+          </select>
+          <p *ngIf="form.get('tipoDocumento')?.touched && form.get('tipoDocumento')?.invalid" class="text-red-600 text-sm">
+            Campo obligatorio.
+          </p>
+          </div>
+          <div>
+            <label for="documento" class="block text-[var(#0a6067)] text-lg font-bold mb-2">Número de Documento:</label>
+            <input formControlName="documento" type="text" id="documento" placeholder="Ingrese el núrmero de documento"
+            class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+            px-3 text-[#0a6067] placeholder-gray-500 leading-tight focus:outline-none
+            focus:border-indigo-500 focus:shadow-outline">
+            <p *ngIf="form.get('documento')?.touched && form.get('documento')?.invalid" class="text-red-600 text-sm">
+              Campo obligatorio.
+            </p>
+        </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Nombres:</label>
+          <input formControlName="nombres" type="text" placeholder="Ingrese nombres completos" class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+          px-3 text-[#0a6067] placeholder-gray-500 leading-tight focus:outline-none
+          focus:border-indigo-500 focus:shadow-outline" (blur)="form.get('nombres')?.markAsTouched()" />
+          <p *ngIf="form.get('nombres')?.touched && form.get('nombres')?.invalid" class="text-red-600 text-sm">
+            El nombre es obligatorio.
+          </p>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium">Apellido Paterno:</label>
+            <input formControlName="apellidoPaterno" type="text" placeholder="Ingrese el Apellido Paterno" class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+            px-3 text-[#0a6067] placeholder-gray-500 leading-tight focus:outline-none
+            focus:border-indigo-500 focus:shadow-outline" (blur)="form.get('apellidoPaterno')?.markAsTouched()" />
+            <p *ngIf="form.get('apellidoPaterno')?.touched && form.get('apellidoPaterno')?.invalid" class="text-red-600 text-sm">
+              El Apellido Paterno es obligatorio.
+            </p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Apellido Materno:</label>
+            <input formControlName="apellidoMaterno" type="text" placeholder="Ingrese el Apellido Materno" class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+            px-3 text-[#0a6067] placeholder-gray-500 leading-tight focus:outline-none
+            focus:border-indigo-500 focus:shadow-outline" (blur)="form.get('apellidoMaterno')?.markAsTouched()" />
+            <p *ngIf="form.get('apellidoMaterno')?.touched && form.get('apellidoMaterno')?.invalid" class="text-red-600 text-sm">
+              El Apellido Paterno es obligatorio.
+            </p>
+          </div>
+        </div>
+        <!-- Correo con validación -->
+        <div>
+          <label class="block text-sm font-medium">Correo</label>
+          <input formControlName="correo" type="email" placeholder="Ingrese el correo electrónico" class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+          px-3 text-[#0a6067] placeholder-gray-500 leading-tight focus:outline-none
+          focus:border-indigo-500 focus:shadow-outline" (blur)="form.get('correo')?.markAsTouched()" />
+          <p *ngIf="form.get('correo')?.touched && form.get('correo')?.errors?.['required']" class="text-red-600 text-sm">
+            El correo es obligatorio.
+          </p>
+          <p *ngIf="form.get('correo')?.touched && form.get('correo')?.errors?.['email']" class="text-red-600 text-sm">
+            El correo debe contener "&#64;" y un dominio.
+          </p>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Fecha de Nacimiento -->
+        <div>
+          <label class="block text-sm font-medium">Fecha de Nacimiento</label>
+          <mat-form-field appearance="fill" class="w-full">
+            <input matInput [matDatepicker]="picker" formControlName="fechaNacimiento"
+                   [max]="maxDate" [matDatepickerFilter]="dateFilterNacimiento" (dateChange)="onDateChange($event)" readonly/>
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+          <p *ngIf="form.get('fechaNacimiento')?.touched && form.get('fechaNacimiento')?.invalid" class="text-red-600 text-sm">
+            Debes tener al menos 18 años.
+          </p>
+        </div>
+        <!-- Celular -->
+        <div>
+          <label class="block text-sm font-medium">Celular</label>
+          <input formControlName="celular" type="text" placeholder="Ingrese el número de celular" class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+          px-3 text-[#0a6067] placeholder-gray-500 leading-tight focus:outline-none
+          focus:border-indigo-500 focus:shadow-outline" (blur)="form.get('celular')?.markAsTouched()" />
+          <p *ngIf="form.get('celular')?.touched && form.get('celular')?.invalid" class="text-red-600 text-sm">
+            El celular es obligatorio.
+          </p>
+        </div>
+        </div>
+        <!-- Ubicación: Departamentos / Provincias / Distritos -->
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium">Departamento</label>
+            <select formControlName="departamento" class="mt-1 block w-full p-2 border rounded">
+              <option [ngValue]="null" disabled>Seleccione...</option>
+              <option *ngFor="let d of departamentos" [ngValue]="d.id">{{ d.nombre }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Provincia</label>
+            <select formControlName="provincia" class="mt-1 block w-full p-2 border rounded">
+              <option [ngValue]="null" disabled>Seleccione...</option>
+              <option *ngFor="let p of provincias" [ngValue]="p.id">{{ p.nombre }}</option>
+            </select> 
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Distrito</label>
+            <select formControlName="distrito" class="mt-1 block w-full p-2 border rounded">
+              <option [ngValue]="null" disabled>Seleccione...</option>
+              <option *ngFor="let dist of distritos" [ngValue]="dist.id">{{ dist.nombre }}</option>
+            </select>
+          </div>
+        </div>
+      
+        <!-- Dirección: Via / Urbanización -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium">Tipo de Vía</label>
+            <select formControlName="tipoVia" class="mt-1 w-full p-2 border rounded">
+              <option value="" disabled>---</option>
+              <option *ngFor="let v of tiposVia" [value]="v">{{ v }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Número</label>
+            <input formControlName="numero" type="text" placeholder="Ingrese el número de via" class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+            px-3 text-[#0a6067] placeholder-gray-500 leading-tight focus:outline-none
+            focus:border-indigo-500 focus:shadow-outline" [disabled]="!form.value.tipoVia" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Nombre de Vía</label>
+            <input formControlName="nombreVia" type="text" placeholder="Ingrese el nombre de la vía" class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+            px-3 text-[#0a6067] placeholder-gray-500 leading-tight focus:outline-none
+            focus:border-indigo-500 focus:shadow-outline" [disabled]="!form.value.tipoVia" />
+          </div>
+      
+          <div>
+            <label class="block text-sm font-medium">Tipo Urbanización</label>
+            <select formControlName="tipoUrbanizacion" class="mt-1 w-full p-2 border rounded">
+              <option value="" disabled>---</option>
+              <option *ngFor="let u of tiposUrbanizacion" [value]="u">{{ u }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Nombre Urbanización</label>
+            <input formControlName="nombreUrbanizacion" type="text" placeholder="Ingrese el nombre de la Urbanización"
+            class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+            px-3 text-[#0a6067] placeholder-gray-500 leading-tight focus:outline-none
+            focus:border-indigo-500 focus:shadow-outline" [disabled]="!form.value.tipoUrbanizacion" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Manzana / Lote</label>
+            <div class="flex space-x-2">
+              <input formControlName="manzana" placeholder="MZ" class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+              px-3 text-[#0a6067] placeholder-gray-500 leading-tight focus:outline-none
+              focus:border-indigo-500 focus:shadow-outline" [disabled]="!form.value.tipoUrbanizacion" />
+              <input formControlName="lote" placeholder="LT" class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+              px-3 text-[#0a6067] placeholder-gray-500 leading-tight focus:outline-none
+              focus:border-indigo-500 focus:shadow-outline" [disabled]="!form.value.tipoUrbanizacion" />
+            </div>
+          </div>
+        </div>
+      
+        <!-- Piso / Interior -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium">Piso (opcional)</label>
+            <input formControlName="piso" type="text" class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+            px-3 text-[#0a6067] placeholder-gray-500 leading-tight focus:outline-none
+            focus:border-indigo-500 focus:shadow-outline" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Interior (opcional)</label>
+            <input formControlName="interior" type="text" class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+            px-3 text-[#0a6067] placeholder-gray-500 leading-tight focus:outline-none
+            focus:border-indigo-500 focus:shadow-outline" />
+          </div>
+        </div>
+        <div>
+            <label class="block text-sm font-medium">Latitud</label>
+            <mat-form-field appearance="fill" class="w-full">
+              <input matInput formControlName="latitud" type="number" placeholder="Ingrese la coordenada Latitud" class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+              px-3 text-[#0a6067] placeholder-gray-500 leading-tight focus:outline-none
+              focus:border-indigo-500 focus:shadow-outline">
+              <mat-error *ngIf="form.get('latitud')?.hasError('required') && form.get('latitud')?.touched">
+                La latitud es requerida.
+              </mat-error>
+            </mat-form-field>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium">Longitud</label>
+            <mat-form-field appearance="fill" class="w-full">
+              <input matInput formControlName="longitud" type="number" placeholder="Ingrese la coordenada Longitud" class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
+              px-3 text-[#0a6067] placeholder-gray-500 leading-tight focus:outline-none
+              focus:border-indigo-500 focus:shadow-outline">
+              <mat-error *ngIf="form.get('longitud')?.hasError('required') && form.get('longitud')?.touched">
+                La longitud es requerida.
+              </mat-error>
+            </mat-form-field>
+          </div>
+        <!-- Botón Registrar cliente -->
+        <div class="text-right">
+          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded" [disabled]="form.invalid">
+            Registrar Cliente
+          </button>
+        </div>
+      </form>
+</div>
