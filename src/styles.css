@@ -1,3 +1,37 @@
 @import "tailwindcss";
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+@layer components {
+    .conecta-bg-gradient {
+        @apply min-h-screen bg-gradient-to-br from-[#008d92] via-[#64b0a8] to-[#99bfb5] flex items-center justify-center p-4;
+    }
+    
+    .conecta-card {
+        @apply max-w-md w-full bg-white rounded-xl shadow-lg p-8;
+    }
+    
+    .conecta-title {
+        @apply text-2xl font-bold text-[#0a6067] mb-6 text-center;
+    }
+    
+    .conecta-subtitle {
+        @apply text-center text-[#008d92] mb-6;
+    }
+    
+    .conecta-label {
+        @apply block text-sm font-medium text-[#008d92] mb-1;
+    }
+    
+    .conecta-input {
+        @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#64b0a8] focus:border-[#64b0a8] outline-none transition-all placeholder:text-gray-400 disabled:bg-gray-100 disabled:text-gray-400;
+    }
+    
+    .conecta-btn-primary {
+        @apply w-full bg-[#008d92] hover:bg-[#0a6067] text-white font-medium py-2.5 rounded-lg transition-colors shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center;
+    }
+    
+    .conecta-error-msg {
+        @apply mt-2 text-sm text-red-600 bg-red-50 rounded p-2 text-center border border-red-200 shadow-sm animate-pulse;
+    }
+}

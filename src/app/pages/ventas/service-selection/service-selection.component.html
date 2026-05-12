@@ -1,42 +1,265 @@
-<div>
-    <h2 class="text-xl font-bold">Registrar Servicio</h2>
-</div>
-<div>
-    <form action="">
-        <div>
-            <div>
-                <label for="planInternet" class="block text-[#0a6067] text-lg font-bold mb-2">Eliga el plan:</label>
-                <input type="text" id="planInternet" placeholder="Ingrese su apellido paterno"
-                class="shadow appearance-none border-gray-600 border-b border-gray-400 bg-transparent rounded w-full py-2
-                px-3 text-[var(--text-color-blue-blanco)] placeholder-gray-500 leading-tight focus:outline-none
-                focus:border-indigo-500 focus:shadow-outline">
-            </div>
-        </div>
-        <div>
-            <div class="flex items-center space-x-4">
-                <mat-form-field>
-                    <mat-label>Fecha de Instalación</mat-label>
-                    <input matInput [matDatepicker]="pickerInstalacion" (click)="pickerInstalacion.open()" [formControl]="fechaInstalacion"
-                        [matDatepickerFilter]="dateFilterInstalacion" [min]="minDateInstalacion"
-                        [max]="maxDateInstalacion" (dateChange)="onFechaInstalacionChange($event)" readonly>
-                    <mat-datepicker-toggle matSuffix [for]="pickerInstalacion"></mat-datepicker-toggle>
-                    <mat-datepicker #pickerInstalacion></mat-datepicker>
-                </mat-form-field>
+<div class="min-h-screen bg-gray-50 flex py-10 px-4 md:px-8">
+  <div class="max-w-7xl w-full mx-auto bg-white rounded-2xl shadow-xl overflow-hidden p-8">
+    
+    <div class="mb-8 border-b pb-4 border-gray-200">
+      <h1 class="text-3xl font-bold text-[#0a6067]">Configuración de Servicio</h1>
+      <p class="text-gray-500 mt-2">Paso 2: Selección de Plan y Agenda de Instalación.</p>
+      <button type="button" routerLink="/venta/registro" class="text-[#0a6067] hover:text-[#008d92] font-semibold transition-colors flex items-center gap-1 mt-4">
+        &larr; Volver al Paso 1
+      </button>
+    </div>
 
-                <mat-form-field>
-                    <mat-label>Turno de Instalación</mat-label>
-                    <mat-select [formControl]="turnoSeleccionado" (selectionChange)="onTurnoChange($event)">
-                        <mat-option *ngFor="let turno of turnosDisponibles" [value]="turno.value">
-                            {{turno.viewValue}}
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
+    <form [formGroup]="form" (ngSubmit)="finalizarVenta()">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
+         
+         <!-- Columna Izquierda: Planes y Formularios -->
+         <div class="lg:col-span-8 space-y-8">
+            <section>
+              <h2 class="text-xl font-semibold text-[#008d92] flex items-center gap-2 mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Catálogo Activo
+              </h2>
+
+              @if (hasError()) {
+                 <div class="p-6 bg-red-50 border border-red-200 rounded-2xl flex flex-col items-center justify-center text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <h3 class="text-lg font-bold text-red-700 mb-2">Error de Conexión</h3>
+                    <p class="text-red-600 mb-4">No se pudieron cargar los planes de red en este momento.</p>
+                    <button type="button" (click)="reintentarCarga()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors shadow-sm">Reintentar</button>
+                 </div>
+              } @else {
+                @for (category of objectKeys(planesPorServicio()); track category) {
+                  <div class="mb-8 p-6 bg-slate-50 border border-slate-100 rounded-2xl shadow-sm">
+                    <div class="flex items-center gap-3 mb-6 border-b border-gray-200 pb-2">
+                       <span class="bg-[#0a6067] text-white text-sm px-3 py-1 font-semibold rounded-full uppercase">{{ category }}</span>
+                       <h3 class="text-lg font-bold text-gray-700">Planes Disponibles</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      @for (plan of planesPorServicio()[category]; track plan.id) {
+                        <label 
+                          class="relative border-2 rounded-xl p-6 cursor-pointer transition-all hover:border-[#64b0a8] hover:shadow-md flex flex-col items-center text-center bg-white"
+                          [class.border-[#008d92]]="form.get('planId')?.value === plan.id"
+                          [class.bg-[#f0f9f8]]="form.get('planId')?.value === plan.id"
+                          [class.border-gray-200]="form.get('planId')?.value !== plan.id">
+                          
+                          <input type="radio" formControlName="planId" [value]="plan.id" class="sr-only">
+
+                          <div class="absolute top-0 right-0 bg-[#008d92] text-xs font-bold text-white px-3 py-1 rounded-bl-lg tracking-wider">
+                             {{ category }}
+                          </div>
+                          
+                          <div class="text-[#0a6067] mb-2 mt-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                            </svg>
+                          </div>
+                          <h3 class="text-xl font-bold text-gray-800">{{ plan.nombre }}</h3>
+                          
+                          <!-- Reglas Opción de Megas -->
+                          @if (plan.velocidadBaseMbps) {
+                             <div class="font-bold text-gray-700 mb-4">{{ plan.velocidadBaseMbps }} Mbps</div>
+                          } @else {
+                             <p class="text-sm text-gray-500 mb-4">{{ plan.detalle || 'Velocidad Ilimitada' }}</p>
+                          }
+                          
+                          <div class="mt-auto pt-4">
+                            <span class="text-3xl font-extrabold text-[#008d92]">S/ {{ plan.precio }}</span>
+                            <span class="text-sm text-gray-500"> /mes</span>
+                          </div>
+                          
+                          @if (form.get('planId')?.value === plan.id) {
+                            <div class="absolute top-1 left-2 text-[#008d92]">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                              </svg>
+                            </div>
+                          }
+                        </label>
+                      }
+                    </div>
+                  </div>
+                }
+              }
+              
+            </section>
+
+            <!-- Bloque Agendamiento y Extras -->
+            <section class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+              <h2 class="text-xl font-semibold text-[#008d92] flex items-center gap-2 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Agendamiento de Instalación
+              </h2>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                   <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Instalación (*)</label>
+                   <input type="date" formControlName="fechaInstalacion" [min]="minDate" class="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#64b0a8] outline-none">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Franja Horaria Preferida (*)</label>
+                  <select formControlName="franjaHoraria" class="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#64b0a8] outline-none bg-white">
+                    <option [ngValue]="null" disabled>Seleccione...</option>
+                    <option value="MAÑANA">MAÑANA (08:00 AM - 01:00 PM)</option>
+                    <option value="TARDE">TARDE (02:00 PM - 06:00 PM)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mt-6 border-t border-gray-200 pt-4">
+                <label class="flex items-center gap-3 cursor-pointer w-fit">
+                  <div class="relative">
+                    <input type="checkbox" formControlName="necesitaRouter" class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-[#008d92] peer-focus:ring-2 peer-focus:ring-[#64b0a8] transition-colors"></div>
+                    <div class="absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"></div>
+                  </div>
+                  <span class="text-sm font-medium text-gray-800">Incluir Router WiFi Autorizado (+ S/0.00 Instalación)</span>
+                </label>
+              </div>
+            </section>
+         </div>
+
+         <!-- Columna Derecha: Carrito Lateral (Sticky) -->
+         <div class="lg:col-span-4">
+            <div class="sticky top-10 space-y-6">
+               
+               <div class="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                  <div class="bg-[#0a6067] p-4">
+                     <h2 class="text-white font-bold text-lg flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        Resumen de Instalación
+                     </h2>
+                  </div>
+                  
+                  <div class="p-6">
+                     @if (resumenFinal(); as resumen) {
+                        <!-- Detalle Plan -->
+                        <div class="mb-6 border-b border-gray-200 pb-4">
+                           <h3 class="text-sm font-bold text-gray-500 uppercase mb-1">Plan Seleccionado</h3>
+                           <p class="text-xl font-bold text-[#008d92]">{{ resumen.plan.nombre }}</p>
+                        </div>
+
+                        <!-- Bloque Promociones Interactivos -->
+                        @if (promocionesDisponibles().length > 0) {
+                           <div class="mb-6">
+                              <h3 class="text-sm font-bold text-gray-500 uppercase mb-3">Promociones Aplicables</h3>
+                              <div class="space-y-3">
+                                 <!-- Opción: Sin Promoción -->
+                                 <label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors hover:bg-gray-100"
+                                        [class.border-[#008d92]]="form.get('promocionId')?.value === null"
+                                        [class.bg-[#f0f9f8]]="form.get('promocionId')?.value === null">
+                                    <div class="flex items-center gap-3">
+                                       <input type="radio" formControlName="promocionId" [value]="null" class="hidden">
+                                       <span class="font-medium text-gray-700">Sin Promoción</span>
+                                    </div>
+                                    @if (form.get('promocionId')?.value === null) {
+                                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#008d92]" viewBox="0 0 20 20" fill="currentColor">
+                                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                       </svg>
+                                    }
+                                 </label>
+
+                                 @for (promo of promocionesDisponibles(); track promo.id) {
+                                    <label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors hover:bg-gray-100"
+                                           [class.border-[#008d92]]="form.get('promocionId')?.value === promo.id"
+                                           [class.bg-[#f0f9f8]]="form.get('promocionId')?.value === promo.id">
+                                       <div class="flex items-center gap-3">
+                                          <input type="radio" formControlName="promocionId" [value]="promo.id" class="hidden">
+                                          <span class="font-medium text-[#0a6067]">{{ promo.nombre }}</span>
+                                       </div>
+                                       @if (form.get('promocionId')?.value === promo.id) {
+                                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#008d92]" viewBox="0 0 20 20" fill="currentColor">
+                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                          </svg>
+                                       }
+                                    </label>
+                                 }
+                              </div>
+                           </div>
+                        }
+
+                        <!-- Visualización de Cambios (Antes vs Después) -->
+                        <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm mb-6">
+                           <!-- Velocidad -->
+                           @if (resumen.velocidadOriginal) {
+                              <div class="flex justify-between items-center mb-4">
+                                 <span class="text-gray-600">Velocidad</span>
+                                 <div class="text-right">
+                                    @if (resumen.cambioVelocidad) {
+                                       <div class="flex items-center gap-2 justify-end">
+                                          <span class="text-sm text-gray-400 line-through">{{ resumen.velocidadOriginal }} Mbps</span>
+                                          <span class="font-extrabold text-[#008d92] flex items-center">
+                                             ⚡ {{ resumen.velocidadFinal }} Mbps
+                                          </span>
+                                       </div>
+                                    } @else {
+                                       <span class="font-bold text-gray-800">{{ resumen.velocidadOriginal }} Mbps</span>
+                                    }
+                                 </div>
+                              </div>
+                           }
+
+                           <!-- Precio -->
+                           <div class="flex justify-between items-center">
+                              <span class="text-gray-600 font-bold">Total Mensual</span>
+                              <div class="text-right">
+                                 @if (resumen.cambioPrecio) {
+                                    <div class="flex flex-col items-end">
+                                       <span class="text-sm text-gray-400 line-through mb-1">S/ {{ resumen.precioOriginal }}</span>
+                                       <span class="text-3xl font-extrabold text-[#0a6067]">S/ {{ resumen.precioFinal }}</span>
+                                    </div>
+                                 } @else {
+                                    <span class="text-3xl font-extrabold text-[#008d92]">S/ {{ resumen.precioOriginal }}</span>
+                                 }
+                              </div>
+                           </div>
+                        </div>
+
+                        <!-- Nota de Vigencia -->
+                        @if (resumen.duracionMeses > 0 && (resumen.cambioPrecio || resumen.cambioVelocidad)) {
+                           <div class="bg-blue-50 text-blue-800 text-sm p-3 rounded-lg flex items-start gap-2 mb-6">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                              </svg>
+                              <p>Condiciones promocionales garantizadas durante los primeros <strong>{{ resumen.duracionMeses }} meses</strong>.</p>
+                           </div>
+                        }
+
+                        <!-- Botón de Acción -->
+                        <button type="submit" [disabled]="form.invalid || isLoading()"
+                          class="w-full bg-[#008d92] hover:bg-[#0a6067] text-white px-8 py-4 rounded-xl font-bold text-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md flex items-center justify-center">
+                          
+                          @if (isLoading()) {
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Procesando Venta...
+                          } @else {
+                            Finalizar y Agendar
+                          }
+                        </button>
+                     } @else {
+                        <div class="text-center py-10">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                           </svg>
+                           <p class="text-gray-400 font-medium">Selecciona un plan del catálogo para iniciar tu orden de compra.</p>
+                        </div>
+                     }
+                  </div>
+               </div>
+               
             </div>
-            <div>
-                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Registrar Servicio
-                </button>
-            </div>
-        </div>
+         </div>
+
+      </div>
     </form>
+  </div>
 </div>

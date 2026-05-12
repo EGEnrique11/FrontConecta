@@ -1,0 +1,320 @@
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
+import { DespachoHttpService } from '../../../core/infrastructure/despacho-http.service';
+import { DespachoStateService } from '../../../features/despacho/services/despacho-state.service';
+
+@Component({
+  selector: 'app-admin-board',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  templateUrl: './admin-board.component.html',
+  styleUrl: './admin-board.component.css'
+})
+export default class AdminBoardComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private httpService = inject(DespachoHttpService);
+  public state = inject(DespachoStateService);
+
+  fechaSelect = signal<string>(new Date().toISOString().split('T')[0]);
+  franjaSelect = signal<string>('MAÑANA');
+
+  setFechaSelect(val: string) {
+    this.fechaSelect.set(val);
+  }
+
+  setFranjaSelect(val: string) {
+    this.franjaSelect.set(val);
+  }
+
+  // Form for assignment
+  assignForm!: FormGroup;
+  selectedInstalacion = signal<any>(null);
+
+  // Tabs
+  activeTab = signal<string>('tablero');
+  
+  // Turnos & Tecnicos
+  searchTerm = signal<string>('');
+  tecnicosBuscados = signal<any[]>([]);
+  turnosDisponibles = signal<any[]>([]);
+  selectedTecnicoForTurno = signal<any>(null);
+
+  // Pagination for Equipo
+  currentPage = signal<number>(0);
+  pageSize = signal<number>(10);
+  totalPages = signal<number>(0);
+  isGlobalSearch = signal<boolean>(false);
+
+  // Blocks
+  tecnicoBloques = signal<any[]>([]);
+  
+  // Turno Manager
+  selectedTurnoForManager = signal<any>(null);
+  turnoBloques = signal<any[]>([]);
+  bloqueForm!: FormGroup;
+
+  turnoForm!: FormGroup;
+
+  constructor() {
+    this.assignForm = this.fb.group({
+      tecnicoId: [null, Validators.required],
+      bloqueId: [null, Validators.required]
+    });
+
+    this.turnoForm = this.fb.group({
+      horaInicio: ['', Validators.required],
+      horaFin: ['', Validators.required]
+    });
+
+    this.bloqueForm = this.fb.group({
+      horaInicio: ['', Validators.required],
+      horaFin: ['', Validators.required],
+      esRefrigerio: [false]
+    });
+  }
+
+  ngOnInit(): void {
+    this.loadTecnicos();
+    this.loadPendientes();
+    this.loadTurnos();
+    this.loadEquipoPaginado();
+  }
+
+  setTab(tab: string) {
+    this.activeTab.set(tab);
+  }
+
+  loadTurnos() {
+    this.httpService.obtenerTurnos().subscribe({
+      next: (data) => this.turnosDisponibles.set(data),
+      error: (err) => console.error(err)
+    });
+  }
+
+  // ==== EQUIPO TÉCNICO & PAGINATION ====
+  
+  loadEquipoPaginado() {
+    const criterio = this.searchTerm().trim() ? 'GENERAL' : undefined;
+    const valor = this.searchTerm().trim() || undefined;
+
+    this.httpService.obtenerTecnicosPaginadosExclusivo(this.currentPage(), this.pageSize(), valor).subscribe({
+      next: (data) => {
+        // Map to TecnicoResumenDTO structure for compatibility
+        const mapped = data.content.map((emp: any) => ({
+          id: emp.id,
+          nombreCompleto: emp.nombreCompleto || emp.nombresCompletos,
+          documento: emp.documento,
+          celular: emp.celular,
+          turnoId: emp.turnoId,
+          turnoNombre: emp.turnoNombre
+        }));
+        this.tecnicosBuscados.set(mapped);
+        this.totalPages.set(data.totalPages);
+        this.isGlobalSearch.set(false);
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages() - 1) {
+      this.currentPage.set(this.currentPage() + 1);
+      this.isGlobalSearch() ? this.buscarTecnicoResumen() : this.loadEquipoPaginado();
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage() > 0) {
+      this.currentPage.set(this.currentPage() - 1);
+      this.isGlobalSearch() ? this.buscarTecnicoResumen() : this.loadEquipoPaginado();
+    }
+  }
+
+  buscarTecnicoResumen() {
+    if (!this.searchTerm().trim()) {
+      this.currentPage.set(0);
+      this.loadEquipoPaginado();
+      return;
+    }
+    this.isGlobalSearch.set(true);
+    // Using the lightweight endpoint
+    this.httpService.buscarTecnicos(this.searchTerm()).subscribe({
+      next: (data) => {
+        this.tecnicosBuscados.set(data);
+        this.totalPages.set(1); // Lightweight search doesn't paginate currently
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  seleccionarTecnico(tecnico: any) {
+    this.selectedTecnicoForTurno.set(tecnico);
+  }
+
+  guardarTurnoTecnico(tecnicoId: number, event: any) {
+    const turnoId = event.target.value;
+    if (!turnoId) return;
+
+    this.httpService.asignarTurnoATecnico(tecnicoId, turnoId).subscribe({
+      next: () => {
+        alert("Turno asignado correctamente.");
+        this.isGlobalSearch() ? this.buscarTecnicoResumen() : this.loadEquipoPaginado();
+      },
+      error: (err) => alert("Error al asignar turno")
+    });
+  }
+
+  // ==== GESTIÓN DE TURNOS ====
+
+  crearTurno() {
+    if (this.turnoForm.invalid) return;
+    this.httpService.crearTurno(this.turnoForm.value).subscribe({
+      next: () => {
+        alert("Turno y bloques generados.");
+        this.loadTurnos();
+        this.turnoForm.reset();
+      },
+      error: (err) => alert("Error al crear turno")
+    });
+  }
+
+  gestionarBloques(turno: any) {
+    this.selectedTurnoForManager.set(turno);
+    this.cargarBloquesDelTurno(turno.id);
+  }
+
+  cargarBloquesDelTurno(turnoId: number) {
+    this.httpService.obtenerBloquesPorTurno(turnoId).subscribe({
+      next: (data) => this.turnoBloques.set(data),
+      error: (err) => console.error(err)
+    });
+  }
+
+  agregarBloque() {
+    if (this.bloqueForm.invalid || !this.selectedTurnoForManager()) return;
+    
+    this.httpService.crearBloque(this.selectedTurnoForManager().id, this.bloqueForm.value).subscribe({
+      next: () => {
+        this.cargarBloquesDelTurno(this.selectedTurnoForManager().id);
+        this.bloqueForm.reset({esRefrigerio: false});
+      },
+      error: (err) => alert(err.error?.message || "Error al agregar bloque")
+    });
+  }
+
+  editarBloque(bloque: any) {
+    const nuevoInicio = prompt("Nueva hora inicio (HH:mm:ss):", bloque.horaInicio);
+    if (!nuevoInicio) return;
+    const nuevoFin = prompt("Nueva hora fin (HH:mm:ss):", bloque.horaFin);
+    if (!nuevoFin) return;
+    const esRefrigerio = confirm("¿Es refrigerio? (Aceptar = Sí, Cancelar = No)");
+
+    const dto = {
+      horaInicio: nuevoInicio.length === 5 ? nuevoInicio + ":00" : nuevoInicio,
+      horaFin: nuevoFin.length === 5 ? nuevoFin + ":00" : nuevoFin,
+      esRefrigerio: esRefrigerio
+    };
+
+    this.httpService.editarBloque(bloque.id, dto).subscribe({
+      next: () => this.cargarBloquesDelTurno(this.selectedTurnoForManager().id),
+      error: () => alert("Error al editar bloque")
+    });
+  }
+
+  eliminarBloque(bloqueId: number) {
+    if (!confirm("¿Seguro que desea eliminar este bloque?")) return;
+    this.httpService.eliminarBloque(bloqueId).subscribe({
+      next: () => this.cargarBloquesDelTurno(this.selectedTurnoForManager().id),
+      error: () => alert("Error al eliminar bloque")
+    });
+  }
+
+  // ==== TABLERO OPERATIVO ====
+
+  loadTecnicos() {
+    this.httpService.obtenerListaTecnicos().subscribe({
+      next: (data) => this.state.setTecnicos(data),
+      error: (err) => console.error(err)
+    });
+  }
+
+  asignadas = signal<any[]>([]);
+
+  loadPendientes() {
+    this.httpService.obtenerPendientes(this.fechaSelect(), this.franjaSelect()).subscribe({
+      next: (data) => {
+        this.state.setPendientes(data);
+      },
+      error: (err) => console.error(err)
+    });
+    this.loadAsignadas();
+  }
+
+  loadAsignadas() {
+    this.httpService.obtenerAsignadas(this.fechaSelect()).subscribe({
+      next: (data) => this.asignadas.set(data),
+      error: (err) => console.error(err)
+    });
+  }
+
+  onFilterChange() {
+    this.loadPendientes();
+  }
+
+  selectInstalacion(inst: any) {
+    this.selectedInstalacion.set(inst);
+    this.assignForm.patchValue({ bloqueId: null, tecnicoId: null });
+    this.tecnicoBloques.set([]);
+  }
+
+  onTecnicoSelected(event: any) {
+    const tecnicoId = event.target.value;
+    if (!tecnicoId || tecnicoId === "null") {
+      this.tecnicoBloques.set([]);
+      return;
+    }
+
+    this.httpService.obtenerTurnoDeTecnico(tecnicoId).subscribe({
+      next: (turno) => {
+        if (turno && turno.id) {
+          this.httpService.obtenerBloquesPorTurno(turno.id).subscribe({
+            next: (bloques) => this.tecnicoBloques.set(bloques),
+            error: () => this.tecnicoBloques.set([])
+          });
+        } else {
+          this.tecnicoBloques.set([]);
+        }
+      },
+      error: () => this.tecnicoBloques.set([])
+    });
+  }
+
+  asignarRuta() {
+    if (this.assignForm.invalid || !this.selectedInstalacion()) return;
+
+    const dto = {
+      tecnicoId: Number(this.assignForm.value.tecnicoId),
+      bloqueId: Number(this.assignForm.value.bloqueId)
+    };
+
+    this.httpService.asignarTecnico(this.selectedInstalacion().id, dto).subscribe({
+      next: () => {
+        alert("Ruta asignada");
+        this.selectedInstalacion.set(null);
+        this.loadPendientes();
+      },
+      error: (err) => alert(err.error?.message || "Error al asignar")
+    });
+  }
+
+  cambiarEstado(id: number, estado: string) {
+    this.httpService.cambiarEstado(id, estado).subscribe({
+      next: () => {
+        alert("Estado actualizado a " + estado);
+        this.loadPendientes();
+      },
+      error: (err) => alert("Error al cambiar estado")
+    });
+  }
+}

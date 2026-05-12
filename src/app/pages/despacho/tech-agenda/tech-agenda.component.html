@@ -1,0 +1,90 @@
+<div class="bg-gray-50 min-h-screen pb-20">
+  <!-- Header / Selector Horizontal -->
+  <div class="bg-white shadow-sm sticky top-0 z-10 px-4 py-3 flex gap-2 items-center justify-between border-b border-gray-200">
+    <div class="flex items-center gap-2">
+      <div class="w-10 h-10 bg-[#008d92] text-white rounded-full flex items-center justify-center text-xl shadow">
+        <i class="fas fa-calendar-alt"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-gray-800 leading-tight">Mi Agenda</h1>
+        <p class="text-xs text-gray-500">Servicios Técnicos</p>
+      </div>
+    </div>
+    <div class="flex gap-2">
+      <select [ngModel]="mesSelect()" (ngModelChange)="setMesSelect($event); onDateChange()" class="border-none bg-gray-100 text-sm rounded-lg p-2 font-medium text-gray-700 focus:ring-[#008d92]">
+        @for (mes of getMeses(); track mes.v) {
+          <option [value]="mes.v">{{ mes.text }}</option>
+        }
+      </select>
+      <select [ngModel]="anioSelect()" (ngModelChange)="setAnioSelect($event); onDateChange()" class="border-none bg-gray-100 text-sm rounded-lg p-2 font-medium text-gray-700 focus:ring-[#008d92]">
+        @for (anio of getAnios(); track anio) {
+          <option [value]="anio">{{ anio }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Contenido Principal -->
+  <div class="p-4 space-y-4">
+    @if (state.instalacionesDelDia().length === 0) {
+      <div class="bg-white rounded-xl p-8 text-center shadow-sm border border-gray-100">
+        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400 text-2xl">
+          <i class="fas fa-bed"></i>
+        </div>
+        <p class="text-gray-600 font-medium">No tienes instalaciones en este periodo.</p>
+        <p class="text-xs text-gray-400 mt-1">Disfruta tu tiempo libre.</p>
+      </div>
+    }
+
+    @for (inst of state.instalacionesDelDia(); track inst.id) {
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
+        <!-- Indicador lateral de estado -->
+        <div class="absolute top-0 left-0 w-1.5 h-full"
+             [ngClass]="{
+               'bg-yellow-400': inst.estado === 'PENDIENTE' || inst.estado === 'REPROGRAMADA',
+               'bg-blue-500': inst.estado === 'EN_RUTA',
+               'bg-[#64b0a8]': inst.estado === 'COMPLETADA',
+               'bg-red-500': inst.estado === 'CANCELADA'
+             }">
+        </div>
+
+        <div class="p-4 pl-5">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full"
+                  [ngClass]="{
+                    'bg-yellow-50 text-yellow-700': inst.estado === 'PENDIENTE' || inst.estado === 'REPROGRAMADA',
+                    'bg-blue-50 text-blue-700': inst.estado === 'EN_RUTA',
+                    'bg-[#eef6f5] text-[#4d8f88]': inst.estado === 'COMPLETADA',
+                    'bg-red-50 text-red-700': inst.estado === 'CANCELADA'
+                  }">
+              {{ inst.estado }}
+            </span>
+            <span class="text-xs text-gray-500 font-medium">{{ inst.fechaProgramada | date:'shortDate' }} | {{ inst.franjaHoraria }}</span>
+          </div>
+
+          <h3 class="text-lg font-bold text-gray-800 leading-tight mb-1">{{ inst.nombreCliente }}</h3>
+          
+          <div class="flex items-start mt-2 text-sm text-gray-600">
+            <i class="fas fa-map-marker-alt text-[#008d92] mt-1 mr-2 w-4 text-center"></i>
+            <p class="leading-snug">{{ inst.direccionCompleta }}</p>
+          </div>
+
+          <div class="flex items-center mt-1 text-sm text-gray-600">
+            <i class="fas fa-hashtag text-gray-400 mr-2 w-4 text-center"></i>
+            <p>Contrato #{{ inst.contratoId }}</p>
+          </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="bg-gray-50 px-4 py-3 border-t border-gray-100 flex gap-2">
+          <a href="tel:000000000" class="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm">
+            <i class="fas fa-phone-alt"></i> Llamar
+          </a>
+          <button (click)="openMaps(inst.direccionCompleta)" class="flex-1 flex items-center justify-center gap-2 bg-[#008d92] text-white py-2 rounded-lg text-sm font-medium shadow-sm hover:bg-[#0a6067] transition-colors">
+            <i class="fas fa-map text-white"></i> Mapa
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

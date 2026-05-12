@@ -1,0 +1,225 @@
+<div class="bg-gray-50 min-h-screen p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Gestión de Empleados</h1>
+    <button (click)="openModal()" class="bg-[#0a6067] hover:bg-[#008d92] text-white px-4 py-2 rounded-lg shadow transition-colors font-medium flex items-center gap-2">
+      <i class="fas fa-plus"></i> Nuevo Empleado
+    </button>
+  </div>
+
+  <!-- Panel de Filtros -->
+  <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6 flex flex-wrap gap-4 items-center">
+    
+    <!-- Criterio Principal -->
+    <div>
+      <select [ngModel]="criterioFilter()" (ngModelChange)="setCriterioFilter($event)" class="border border-gray-300 rounded p-2 focus:ring-[#99bfb5] font-medium text-gray-700 bg-gray-50">
+        <option value="NOMBRE">Buscar por Nombre</option>
+        <option value="DOCUMENTO">Buscar por Documento</option>
+        <option value="CELULAR">Buscar por Celular</option>
+      </select>
+    </div>
+
+    <!-- Valor de búsqueda con placeholder dinámico -->
+    <div class="flex-1 min-w-[200px]">
+      <input type="text" [ngModel]="valorFilter()" (ngModelChange)="setValorFilter($event)" (keyup.enter)="search()"
+             [placeholder]="criterioFilter() === 'NOMBRE' ? 'Ingrese el nombre o apellido...' : (criterioFilter() === 'DOCUMENTO' ? 'Ingrese el número de documento...' : 'Ingrese el número de celular...')" 
+             class="w-full border border-gray-300 rounded p-2 focus:ring-[#99bfb5] focus:border-[#0a6067]">
+    </div>
+    
+    <!-- Filtro de Tipo de Documento (Solo visible si criterio es DOCUMENTO) -->
+    @if (criterioFilter() === 'DOCUMENTO') {
+      <div>
+        <select [ngModel]="tipoDocFilter()" (ngModelChange)="setTipoDocFilter($event)" class="border border-gray-300 rounded p-2 focus:ring-[#99bfb5]">
+          <option value="">Todos los Tipos</option>
+          <option value="DNI">DNI</option>
+          <option value="CE">Carnet Extranjería</option>
+        </select>
+      </div>
+    }
+
+    <!-- Filtro de Rol -->
+    <div>
+      <select [ngModel]="rolFilter()" (ngModelChange)="setRolFilter($event)" class="border border-gray-300 rounded p-2 focus:ring-[#99bfb5]">
+        <option value="">Todos los Roles</option>
+        @for (rol of roles(); track rol.id) {
+          <option [value]="rol.roleName">{{ rol.displayName }}</option>
+        }
+      </select>
+    </div>
+
+    <button (click)="search()" class="bg-[#0a6067] hover:bg-[#008d92] text-white px-6 py-2 rounded-lg font-medium transition-colors shadow">
+      <i class="fas fa-search"></i> Buscar
+    </button>
+  </div>
+
+  <!-- Tabla -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full whitespace-nowrap">
+        <thead class="bg-[#0a6067] text-white">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Documento</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Empleado</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Contacto</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Usuario</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Roles</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          @if (empleados().length === 0) {
+            <tr>
+              <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                No se encontraron empleados con los filtros aplicados.
+              </td>
+            </tr>
+          }
+          
+          @for (emp of empleados(); track emp.id) {
+            <tr class="hover:bg-[#f0f7f6] transition-colors">
+              <td class="px-6 py-4">
+                <p class="text-sm font-medium text-gray-900">{{ emp.documento }}</p>
+                <p class="text-xs text-gray-500">{{ emp.tipoDocumento }}</p>
+              </td>
+              <td class="px-6 py-4">
+                <p class="text-sm font-bold text-gray-800">{{ emp.nombresCompletos }}</p>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-600">
+                <p><i class="fas fa-envelope text-[#99bfb5] w-4"></i> {{ emp.correo }}</p>
+                @if (emp.celular) {
+                  <p><i class="fas fa-mobile-alt text-[#99bfb5] w-4"></i> {{ emp.celular }}</p>
+                }
+              </td>
+              <td class="px-6 py-4 text-sm font-medium text-gray-600">
+                {{ emp.username }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex flex-wrap gap-1">
+                  @for (role of emp.roles; track role) {
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full"
+                          [ngClass]="{
+                            'bg-blue-100 text-blue-800': role === 'ROLE_VENDEDOR',
+                            'bg-orange-100 text-orange-800': role === 'ROLE_TECNICO',
+                            'bg-[#0a6067] text-white': role === 'ROLE_ADMIN' || role === 'ROLE_DEVELOPER'
+                          }">
+                      {{ role.replace('ROLE_', '') }}
+                    </span>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="bg-gray-50 px-6 py-3 border-t border-gray-200 flex items-center justify-between">
+      <div class="text-sm text-gray-700">
+        Mostrando página <span class="font-medium">{{ currentPage() + 1 }}</span> de <span class="font-medium">{{ totalPages() === 0 ? 1 : totalPages() }}</span> 
+        (Total: {{ totalElements() }} registros)
+      </div>
+      <div class="flex gap-1">
+        <button [disabled]="currentPage() === 0" (click)="changePage(currentPage() - 1)" 
+                class="px-3 py-1 border border-gray-300 rounded bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          Anterior
+        </button>
+        <button [disabled]="currentPage() >= totalPages() - 1" (click)="changePage(currentPage() + 1)" 
+                class="px-3 py-1 border border-gray-300 rounded bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          Siguiente
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Registro -->
+@if (isModalOpen()) {
+  <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 bg-[#0a6067]/40 backdrop-blur-sm transition-opacity" aria-hidden="true" (click)="closeModal()"></div>
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+      <div class="relative z-10 inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full">
+        <div class="bg-[#0a6067] px-6 py-4">
+          <h3 class="text-lg leading-6 font-bold text-white" id="modal-title">Registrar Nuevo Empleado</h3>
+        </div>
+        
+        <div class="px-6 py-4">
+          <form [formGroup]="registroForm" (ngSubmit)="guardarEmpleado()">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              <!-- Identidad -->
+              <div class="col-span-1 md:col-span-2"><h4 class="font-semibold text-gray-700 border-b pb-1">Identidad</h4></div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Tipo Doc.</label>
+                <select formControlName="tipoDocumento" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-[#99bfb5]">
+                  <option value="DNI">DNI</option>
+                  <option value="CE">Carnet Extranjería</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Documento *</label>
+                <input formControlName="documento" type="text" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-[#99bfb5]"
+                       [ngClass]="{'border-red-500': registroForm.get('documento')?.invalid && registroForm.get('documento')?.touched}">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Nombres *</label>
+                <input formControlName="nombres" type="text" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-[#99bfb5]">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Apellido Paterno *</label>
+                <input formControlName="apellidoPaterno" type="text" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-[#99bfb5]">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Apellido Materno</label>
+                <input formControlName="apellidoMaterno" type="text" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-[#99bfb5]">
+              </div>
+              
+              <!-- Contacto -->
+              <div class="col-span-1 md:col-span-2 mt-2"><h4 class="font-semibold text-gray-700 border-b pb-1">Contacto</h4></div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Correo Electrónico *</label>
+                <input formControlName="correo" type="email" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-[#99bfb5]">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Celular <span *ngIf="registroForm.get('roles')?.value?.includes('ROLE_TECNICO')" class="text-red-500">*</span></label>
+                <input formControlName="celular" type="text" placeholder="Ej: 987654321" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-[#99bfb5]"
+                       [ngClass]="{'border-red-500': registroForm.get('celular')?.invalid && registroForm.get('celular')?.touched}">
+              </div>
+
+              <!-- Sistema -->
+              <div class="col-span-1 md:col-span-2 mt-2"><h4 class="font-semibold text-gray-700 border-b pb-1">Acceso al Sistema</h4></div>
+              
+              <div class="col-span-1 md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700">Roles * (Mantén CTRL para selección múltiple)</label>
+                <select formControlName="roles" multiple class="mt-1 w-full border border-gray-300 rounded p-2 h-24 focus:ring-[#99bfb5]">
+                  @for (rol of roles(); track rol.id) {
+                    <option [value]="rol.roleName">{{ rol.displayName }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Usuario (Login) *</label>
+                <input formControlName="username" type="text" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-[#99bfb5]">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Contraseña *</label>
+                <input formControlName="password" type="password" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-[#99bfb5]">
+              </div>
+              
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3 bg-gray-50 -mx-6 -mb-4 px-6 py-4 rounded-b-lg">
+              <button type="button" (click)="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 font-medium transition-colors">
+                Cancelar
+              </button>
+              <button type="submit" [disabled]="registroForm.invalid" class="px-4 py-2 bg-[#0a6067] text-white rounded-lg hover:bg-[#008d92] font-medium transition-colors disabled:opacity-50">
+                Guardar Empleado
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+}

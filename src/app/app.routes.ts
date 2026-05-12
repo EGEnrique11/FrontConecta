@@ -10,12 +10,12 @@ export const routes: Routes = [
     },
     {
         path: 'auth/login',
-        loadComponent: () => import('./auth/login/login.component'),
+        loadComponent: () => import('./features/auth/login/login.component'),
     },
     {
         path: '',
         canMatch: [authGuard],
-        loadComponent: () => import('./layout/main-nav/main-nav.component'),
+        loadComponent: () => import('./core/layout/main-layout.component'),
         children: [
             {
                 path: 'menu',
@@ -38,6 +38,16 @@ export const routes: Routes = [
             {
                 path: 'cliente',
                 loadComponent: () => import('./pages/clientes/client-list/client-list.component')
+            },
+            {
+                path: 'empleados',
+                canMatch: [roleGuard],
+                data: {roles: ['ROLE_ADMIN', 'ROLE_DEVELOPER']},
+                loadComponent: () => import('./pages/empleados/empleado-list/empleado-list.component')
+            },
+            {
+                path: 'despacho',
+                loadChildren: () => import('./pages/despacho/despacho.routes').then(m => m.DESPACHO_ROUTES)
             },
             {
                 path: '',
