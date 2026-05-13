@@ -23,9 +23,16 @@
         <label class="text-sm font-medium text-gray-700">Fecha:</label>
         <input type="date" [ngModel]="fechaSelect()" (ngModelChange)="setFechaSelect($event); onFilterChange()" class="border border-gray-300 rounded p-2 text-gray-700 bg-white focus:ring-[#008d92] focus:border-[#008d92]">
       </div>
-      <div class="flex flex-1 max-w-md w-full relative">
-        <input type="text" [ngModel]="globalSearchTerm()" (ngModelChange)="globalSearchTerm.set($event)" (keyup.enter)="buscarInstalacionesGlobal()" placeholder="Buscar instalación por DNI, Nombres..." class="w-full border border-gray-300 rounded-l p-2 focus:ring-[#008d92] focus:border-[#008d92]">
-        <button (click)="buscarInstalacionesGlobal()" class="bg-[#008d92] hover:bg-[#0a6067] text-white px-4 py-2 rounded-r transition-colors"><i class="fas fa-search"></i></button>
+      <div class="flex flex-1 max-w-xl w-full relative gap-2">
+        <select [ngModel]="criterioBusqueda()" (ngModelChange)="criterioBusqueda.set($event)" class="border border-gray-300 rounded p-2 focus:ring-[#008d92] focus:border-[#008d92] bg-white">
+          <option value="DOCUMENTO">Documento (DNI/CE)</option>
+          <option value="NOMBRE">Nombre/Apellido</option>
+          <option value="CELULAR">Celular</option>
+        </select>
+        <div class="flex flex-1 relative">
+          <input type="text" [ngModel]="globalSearchTerm()" (ngModelChange)="globalSearchTerm.set($event)" (keyup.enter)="buscarInstalacionesGlobal()" placeholder="Buscar instalación..." class="w-full border border-gray-300 rounded-l p-2 focus:ring-[#008d92] focus:border-[#008d92]">
+          <button (click)="buscarInstalacionesGlobal()" class="bg-[#008d92] hover:bg-[#0a6067] text-white px-4 py-2 rounded-r transition-colors"><i class="fas fa-search"></i></button>
+        </div>
       </div>
     </div>
 
@@ -51,7 +58,10 @@
                     <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-yellow-200">
                       {{ inst.estado }}
                     </span>
-                    <button (click)="$event.stopPropagation(); abrirReprogramarModal(inst)" class="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300">Reprogramar</button>
+                    <div class="flex gap-2">
+                      <button (click)="$event.stopPropagation(); onCancelarInstalacion(inst.id)" class="text-xs px-2 py-1 bg-red-50 hover:bg-red-100 text-red-700 rounded border border-red-200"><i class="fas fa-trash-alt"></i> Cancelar</button>
+                      <button (click)="$event.stopPropagation(); abrirReprogramarModal(inst)" class="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300">Reprogramar</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -122,8 +132,8 @@
               
               <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-100 items-center justify-between">
                 <div class="flex gap-2">
-                  <button (click)="cambiarEstado(inst.id, 'EN_PROCESO')" class="text-xs px-3 py-1 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 rounded transition-colors">En Proceso</button>
-                  <button (click)="cambiarEstado(inst.id, 'COMPLETADA')" class="text-xs px-3 py-1 text-white rounded transition-colors bg-[#008d92] hover:bg-[#0a6067]">Completar</button>
+                  <button (click)="onCancelarInstalacion(inst.id)" class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded transition-colors">Cancelar</button>
+                  <button (click)="onCompletarInstalacion(inst.id)" class="text-xs px-3 py-1 text-white rounded transition-colors bg-[#008d92] hover:bg-[#0a6067]">Completar</button>
                   <button (click)="abrirReprogramarModal(inst)" class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded transition-colors">Reprogramar</button>
                 </div>
                 @if (inst.celularCliente) {
@@ -301,8 +311,9 @@
               </div>
               <div class="flex flex-wrap gap-2 items-end">
                 @if (inst.estado !== 'COMPLETADA' && inst.estado !== 'CANCELADA') {
+                  <button (click)="onCancelarInstalacion(inst.id)" class="text-sm px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded transition-colors">Cancelar</button>
                   <button (click)="abrirReprogramarModal(inst)" class="text-sm px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded transition-colors">Reprogramar</button>
-                  <button (click)="cambiarEstado(inst.id, 'COMPLETADA')" class="text-sm px-3 py-1.5 text-white rounded transition-colors bg-[#008d92] hover:bg-[#0a6067]">Completar</button>
+                  <button (click)="onCompletarInstalacion(inst.id)" class="text-sm px-3 py-1.5 text-white rounded transition-colors bg-[#008d92] hover:bg-[#0a6067]">Completar</button>
                 }
                 @if (inst.celularCliente) {
                   <a [href]="'https://wa.me/51' + inst.celularCliente" target="_blank" class="text-sm px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded transition-colors flex items-center gap-1"><i class="fab fa-whatsapp"></i> Contactar</a>

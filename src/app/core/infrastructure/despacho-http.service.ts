@@ -17,9 +17,7 @@ export class DespachoHttpService {
     return this.http.put<any>(`${this.baseUrl}/despacho/asignar/${instalacionId}`, dto);
   }
 
-  cambiarEstado(instalacionId: number, estado: string): Observable<any> {
-    return this.http.put<any>(`${this.baseUrl}/despacho/estado/${instalacionId}?estado=${estado}`, {});
-  }
+  // Se removió cambiarEstado ya que se reemplaza por completarInstalacion y cancelarInstalacion
 
   obtenerAgendaTecnico(mes: number, anio: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/despacho/tecnico/agenda?mes=${mes}&anio=${anio}`);
@@ -86,10 +84,19 @@ export class DespachoHttpService {
   }
 
   reprogramarInstalacion(instalacionId: number, dto: {nuevaFecha: string, motivo: string}): Observable<any> {
-    return this.http.put<any>(`${this.baseUrl}/despacho/reprogramar/${instalacionId}`, dto);
+    return this.http.put<any>(`${this.baseUrl}/instalaciones/${instalacionId}/reprogramar`, dto);
   }
 
-  buscarInstalaciones(term: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/despacho/buscar?term=${term}`);
+  cancelarInstalacion(instalacionId: number, motivo?: string): Observable<any> {
+    const body = motivo ? { observaciones: motivo } : {};
+    return this.http.put<any>(`${this.baseUrl}/instalaciones/${instalacionId}/cancelar`, body);
+  }
+
+  completarInstalacion(instalacionId: number, dto?: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/instalaciones/${instalacionId}/completar`, dto || {});
+  }
+
+  buscarInstalaciones(criterio: string, valor: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/despacho/buscar?criterio=${criterio}&valor=${valor}`);
   }
 }

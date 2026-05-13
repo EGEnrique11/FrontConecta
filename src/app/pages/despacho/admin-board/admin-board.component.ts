@@ -58,6 +58,7 @@ export default class AdminBoardComponent implements OnInit {
   reprogramarForm!: FormGroup;
 
   // Search Global
+  criterioBusqueda = signal<string>('DOCUMENTO');
   globalSearchTerm = signal<string>('');
   searchResults = signal<any[]>([]);
   searchModalVisible = signal<boolean>(false);
@@ -323,15 +324,32 @@ export default class AdminBoardComponent implements OnInit {
     });
   }
 
-  cambiarEstado(id: number, estado: string) {
-    this.httpService.cambiarEstado(id, estado).subscribe({
-      next: () => {
-        alert("Estado actualizado a " + estado);
-        this.loadPendientes();
-        if (this.searchModalVisible()) this.buscarInstalacionesGlobal();
-      },
-      error: (err) => alert("Error al cambiar estado")
-    });
+  // ==== MÉTODOS DE CICLO DE VIDA (NUEVO SRP) ====
+  
+  onCancelarInstalacion(id: number) {
+    if (window.confirm('¿Está seguro de cancelar esta instalación? Se liberarán los recursos.')) {
+      this.httpService.cancelarInstalacion(id).subscribe({
+        next: () => {
+          alert("Instalación cancelada exitosamente.");
+          this.loadPendientes();
+          if (this.searchModalVisible()) this.buscarInstalacionesGlobal();
+        },
+        error: (err) => alert("Error al cancelar: " + (err.error?.message || "Error interno"))
+      });
+    }
+  }
+
+  onCompletarInstalacion(id: number) {
+    if (window.confirm('¿Confirmar finalización de esta instalación? El contrato se activará automáticamente.')) {
+      this.httpService.completarInstalacion(id).subscribe({
+        next: () => {
+          alert("Instalación completada.");
+          this.loadPendientes();
+          if (this.searchModalVisible()) this.buscarInstalacionesGlobal();
+        },
+        error: (err) => alert("Error al completar: " + (err.error?.message || "Error interno"))
+      });
+    }
   }
 
   // ==== BUSCADOR GLOBAL ====
@@ -340,7 +358,7 @@ export default class AdminBoardComponent implements OnInit {
       this.searchResults.set([]);
       return;
     }
-    this.httpService.buscarInstalaciones(this.globalSearchTerm()).subscribe({
+    this.httpService.buscarInstalaciones(this.criterioBusqueda(), this.globalSearchTerm()).subscribe({
       next: (data) => {
         this.searchResults.set(data);
         this.searchModalVisible.set(true);
