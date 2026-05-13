@@ -84,4 +84,12 @@ export class DespachoHttpService {
   eliminarBloque(bloqueId: number): Observable<any> {
     return this.http.delete<any>(`${this.baseUrl}/despacho/turnos/bloques/${bloqueId}`);
   }
+
+  reprogramarInstalacion(instalacionId: number, dto: {nuevaFecha: string, motivo: string}): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/despacho/reprogramar/${instalacionId}`, dto);
+  }
+
+  buscarInstalaciones(term: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/despacho/buscar?term=${term}`);
+  }
 }

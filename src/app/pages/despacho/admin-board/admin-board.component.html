@@ -18,8 +18,15 @@
 
   <!-- TAB: TABLERO OPERATIVO -->
   @if (activeTab() === 'tablero') {
-    <div class="mb-4 flex gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-      <input type="date" [ngModel]="fechaSelect()" (ngModelChange)="setFechaSelect($event); onFilterChange()" class="border border-gray-300 rounded p-2 text-gray-700 bg-white focus:ring-[#008d92] focus:border-[#008d92]">
+    <div class="mb-4 flex flex-col md:flex-row gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100 items-center justify-between">
+      <div class="flex gap-4 items-center">
+        <label class="text-sm font-medium text-gray-700">Fecha:</label>
+        <input type="date" [ngModel]="fechaSelect()" (ngModelChange)="setFechaSelect($event); onFilterChange()" class="border border-gray-300 rounded p-2 text-gray-700 bg-white focus:ring-[#008d92] focus:border-[#008d92]">
+      </div>
+      <div class="flex flex-1 max-w-md w-full relative">
+        <input type="text" [ngModel]="globalSearchTerm()" (ngModelChange)="globalSearchTerm.set($event)" (keyup.enter)="buscarInstalacionesGlobal()" placeholder="Buscar instalación por DNI, Nombres..." class="w-full border border-gray-300 rounded-l p-2 focus:ring-[#008d92] focus:border-[#008d92]">
+        <button (click)="buscarInstalacionesGlobal()" class="bg-[#008d92] hover:bg-[#0a6067] text-white px-4 py-2 rounded-r transition-colors"><i class="fas fa-search"></i></button>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -40,9 +47,12 @@
                     <p class="text-sm text-gray-600 mt-1"><i class="fas fa-map-marker-alt text-[#008d92] mr-2"></i>{{ inst.direccionCompleta }}</p>
                     <p class="text-xs text-gray-500 mt-2">ID Contrato: #{{ inst.contratoId }} | Franja/Turno: {{ inst.franjaHoraria }}</p>
                   </div>
-                  <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-yellow-200">
-                    {{ inst.estado }}
-                  </span>
+                  <div class="flex flex-col items-end gap-2">
+                    <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-yellow-200">
+                      {{ inst.estado }}
+                    </span>
+                    <button (click)="$event.stopPropagation(); abrirReprogramarModal(inst)" class="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300">Reprogramar</button>
+                  </div>
                 </div>
               </div>
             }
@@ -110,10 +120,15 @@
                 </span>
               </div>
               
-              <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
-                <button (click)="cambiarEstado(inst.id, 'EN_PROCESO')" class="text-xs px-3 py-1 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 rounded transition-colors">En Proceso</button>
-                <button (click)="cambiarEstado(inst.id, 'COMPLETADA')" class="text-xs px-3 py-1 text-white rounded transition-colors bg-[#008d92] hover:bg-[#0a6067]">Marcar Completada</button>
-                <button (click)="cambiarEstado(inst.id, 'CANCELADA')" class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded transition-colors">Cancelar</button>
+              <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-100 items-center justify-between">
+                <div class="flex gap-2">
+                  <button (click)="cambiarEstado(inst.id, 'EN_PROCESO')" class="text-xs px-3 py-1 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 rounded transition-colors">En Proceso</button>
+                  <button (click)="cambiarEstado(inst.id, 'COMPLETADA')" class="text-xs px-3 py-1 text-white rounded transition-colors bg-[#008d92] hover:bg-[#0a6067]">Completar</button>
+                  <button (click)="abrirReprogramarModal(inst)" class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded transition-colors">Reprogramar</button>
+                </div>
+                @if (inst.celularCliente) {
+                  <a [href]="'https://wa.me/51' + inst.celularCliente" target="_blank" class="text-xs px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded transition-colors flex items-center gap-1"><i class="fab fa-whatsapp"></i> Contactar</a>
+                }
               </div>
             </div>
           }
@@ -257,3 +272,75 @@
     </div>
   }
 </div>
+
+<!-- MODAL BÚSQUEDA GLOBAL -->
+@if (searchModalVisible()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center p-4 border-b border-gray-200">
+        <h2 class="text-xl font-bold text-gray-800">Resultados de Búsqueda</h2>
+        <button (click)="cerrarSearchModal()" class="text-gray-500 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+      </div>
+      <div class="p-4 overflow-y-auto flex-1 bg-gray-50">
+        @if (searchResults().length === 0) {
+          <p class="text-center text-gray-500 py-8">No se encontraron instalaciones para la búsqueda.</p>
+        }
+        <div class="space-y-4">
+          @for (inst of searchResults(); track inst.id) {
+            <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm flex flex-col md:flex-row justify-between gap-4">
+              <div>
+                <div class="flex gap-2 items-center mb-1">
+                  <h3 class="font-bold text-gray-800">{{ inst.nombreCliente }}</h3>
+                  <span class="text-xs font-semibold px-2 py-0.5 rounded border"
+                        [ngClass]="{'bg-[#e6f4f5] text-[#008d92] border-[#b2e2e4]': inst.estado === 'COMPLETADA', 'bg-red-100 text-red-800': inst.estado === 'CANCELADA', 'bg-blue-100 text-blue-800': inst.estado === 'EN_RUTA', 'bg-yellow-100 text-yellow-800': inst.estado === 'EN_PROCESO' || inst.estado === 'PENDIENTE'}">
+                    {{ inst.estado }}
+                  </span>
+                </div>
+                <p class="text-sm text-gray-600"><i class="fas fa-map-marker-alt text-gray-400 mr-2"></i>{{ inst.direccionCompleta }}</p>
+                <p class="text-xs text-gray-500 mt-1">Fecha Programada: {{ inst.fechaProgramada }} | Técnico: {{ inst.tecnicoNombre }}</p>
+              </div>
+              <div class="flex flex-wrap gap-2 items-end">
+                @if (inst.estado !== 'COMPLETADA' && inst.estado !== 'CANCELADA') {
+                  <button (click)="abrirReprogramarModal(inst)" class="text-sm px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded transition-colors">Reprogramar</button>
+                  <button (click)="cambiarEstado(inst.id, 'COMPLETADA')" class="text-sm px-3 py-1.5 text-white rounded transition-colors bg-[#008d92] hover:bg-[#0a6067]">Completar</button>
+                }
+                @if (inst.celularCliente) {
+                  <a [href]="'https://wa.me/51' + inst.celularCliente" target="_blank" class="text-sm px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded transition-colors flex items-center gap-1"><i class="fab fa-whatsapp"></i> Contactar</a>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL REPROGRAMACIÓN -->
+@if (reprogramarModalVisible() && instToReprogramar()) {
+  <div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+      <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="font-bold text-gray-800">Reprogramar Instalación</h3>
+        <button (click)="cerrarReprogramarModal()" class="text-gray-500 hover:text-red-500"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="p-4">
+        <p class="text-sm text-gray-600 mb-4">Vas a reprogramar la instalación de <strong>{{ instToReprogramar().nombreCliente }}</strong>. El técnico y bloque actuales se liberarán automáticamente.</p>
+        <form [formGroup]="reprogramarForm" (ngSubmit)="reprogramarInstalacionSubmit()" class="flex flex-col gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nueva Fecha</label>
+            <input type="date" formControlName="nuevaFecha" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-[#008d92] focus:border-[#008d92]">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Motivo de Reprogramación</label>
+            <textarea formControlName="motivo" rows="3" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-[#008d92] focus:border-[#008d92]" placeholder="Ej. Cliente no se encuentra en domicilio..."></textarea>
+          </div>
+          <div class="flex justify-end gap-2 mt-2">
+            <button type="button" (click)="cerrarReprogramarModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded font-medium transition-colors">Cancelar</button>
+            <button type="submit" [disabled]="reprogramarForm.invalid" class="px-4 py-2 bg-[#008d92] hover:bg-[#0a6067] text-white rounded font-medium disabled:opacity-50 transition-colors">Confirmar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

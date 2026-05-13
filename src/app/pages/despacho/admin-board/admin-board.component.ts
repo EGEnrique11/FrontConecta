@@ -55,6 +55,16 @@ export default class AdminBoardComponent implements OnInit {
   bloqueForm!: FormGroup;
 
   turnoForm!: FormGroup;
+  reprogramarForm!: FormGroup;
+
+  // Search Global
+  globalSearchTerm = signal<string>('');
+  searchResults = signal<any[]>([]);
+  searchModalVisible = signal<boolean>(false);
+
+  // Reprogramar Modal
+  reprogramarModalVisible = signal<boolean>(false);
+  instToReprogramar = signal<any>(null);
 
   constructor() {
     this.assignForm = this.fb.group({
@@ -71,6 +81,11 @@ export default class AdminBoardComponent implements OnInit {
       horaInicio: ['', Validators.required],
       horaFin: ['', Validators.required],
       esRefrigerio: [false]
+    });
+
+    this.reprogramarForm = this.fb.group({
+      nuevaFecha: ['', Validators.required],
+      motivo: ['', Validators.required]
     });
   }
 
@@ -313,8 +328,59 @@ export default class AdminBoardComponent implements OnInit {
       next: () => {
         alert("Estado actualizado a " + estado);
         this.loadPendientes();
+        if (this.searchModalVisible()) this.buscarInstalacionesGlobal();
       },
       error: (err) => alert("Error al cambiar estado")
+    });
+  }
+
+  // ==== BUSCADOR GLOBAL ====
+  buscarInstalacionesGlobal() {
+    if (!this.globalSearchTerm().trim()) {
+      this.searchResults.set([]);
+      return;
+    }
+    this.httpService.buscarInstalaciones(this.globalSearchTerm()).subscribe({
+      next: (data) => {
+        this.searchResults.set(data);
+        this.searchModalVisible.set(true);
+      },
+      error: () => alert("Error en búsqueda")
+    });
+  }
+
+  cerrarSearchModal() {
+    this.searchModalVisible.set(false);
+  }
+
+  // ==== MODAL REPROGRAMAR ====
+  abrirReprogramarModal(inst: any) {
+    this.instToReprogramar.set(inst);
+    this.reprogramarForm.patchValue({ nuevaFecha: '', motivo: '' });
+    this.reprogramarModalVisible.set(true);
+    if (this.searchModalVisible()) this.searchModalVisible.set(false);
+  }
+
+  cerrarReprogramarModal() {
+    this.reprogramarModalVisible.set(false);
+    this.instToReprogramar.set(null);
+  }
+
+  reprogramarInstalacionSubmit() {
+    if (this.reprogramarForm.invalid || !this.instToReprogramar()) return;
+    
+    const dto = {
+      nuevaFecha: this.reprogramarForm.value.nuevaFecha,
+      motivo: this.reprogramarForm.value.motivo
+    };
+
+    this.httpService.reprogramarInstalacion(this.instToReprogramar().id, dto).subscribe({
+      next: () => {
+        alert("Instalación reprogramada exitosamente.");
+        this.cerrarReprogramarModal();
+        this.loadPendientes();
+      },
+      error: (err) => alert("Error al reprogramar: " + (err.error?.message || "Servidor no responde"))
     });
   }
 }
