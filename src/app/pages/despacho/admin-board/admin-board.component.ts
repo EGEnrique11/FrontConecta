@@ -33,7 +33,7 @@ export default class AdminBoardComponent implements OnInit {
 
   // Tabs
   activeTab = signal<string>('tablero');
-  
+
   // Turnos & Tecnicos
   searchTerm = signal<string>('');
   tecnicosBuscados = signal<any[]>([]);
@@ -48,7 +48,7 @@ export default class AdminBoardComponent implements OnInit {
 
   // Blocks
   tecnicoBloques = signal<any[]>([]);
-  
+
   // Turno Manager
   selectedTurnoForManager = signal<any>(null);
   turnoBloques = signal<any[]>([]);
@@ -67,6 +67,11 @@ export default class AdminBoardComponent implements OnInit {
   reprogramarModalVisible = signal<boolean>(false);
   instToReprogramar = signal<any>(null);
 
+  // Edit Bloque Modal
+  editBloqueForm!: FormGroup;
+  editBloqueModalVisible = signal<boolean>(false);
+  bloqueToEdit = signal<any>(null);
+
   constructor() {
     this.assignForm = this.fb.group({
       tecnicoId: [null, Validators.required],
@@ -79,6 +84,12 @@ export default class AdminBoardComponent implements OnInit {
     });
 
     this.bloqueForm = this.fb.group({
+      horaInicio: ['', Validators.required],
+      horaFin: ['', Validators.required],
+      esRefrigerio: [false]
+    });
+
+    this.editBloqueForm = this.fb.group({
       horaInicio: ['', Validators.required],
       horaFin: ['', Validators.required],
       esRefrigerio: [false]
@@ -109,7 +120,7 @@ export default class AdminBoardComponent implements OnInit {
   }
 
   // ==== EQUIPO TÉCNICO & PAGINATION ====
-  
+
   loadEquipoPaginado() {
     const criterio = this.searchTerm().trim() ? 'GENERAL' : undefined;
     const valor = this.searchTerm().trim() || undefined;
@@ -209,37 +220,53 @@ export default class AdminBoardComponent implements OnInit {
 
   agregarBloque() {
     if (this.bloqueForm.invalid || !this.selectedTurnoForManager()) return;
-    
+
     this.httpService.crearBloque(this.selectedTurnoForManager().id, this.bloqueForm.value).subscribe({
       next: () => {
         this.cargarBloquesDelTurno(this.selectedTurnoForManager().id);
-        this.bloqueForm.reset({esRefrigerio: false});
+        this.bloqueForm.reset({ esRefrigerio: false });
       },
       error: (err) => alert(err.error?.message || "Error al agregar bloque")
     });
   }
 
   editarBloque(bloque: any) {
-    const nuevoInicio = prompt("Nueva hora inicio (HH:mm:ss):", bloque.horaInicio);
-    if (!nuevoInicio) return;
-    const nuevoFin = prompt("Nueva hora fin (HH:mm:ss):", bloque.horaFin);
-    if (!nuevoFin) return;
-    const esRefrigerio = confirm("¿Es refrigerio? (Aceptar = Sí, Cancelar = No)");
+    this.bloqueToEdit.set(bloque);
+    this.editBloqueForm.patchValue({
+      horaInicio: bloque.horaInicio ? bloque.horaInicio.substring(0, 5) : '',
+      horaFin: bloque.horaFin ? bloque.horaFin.substring(0, 5) : '',
+      esRefrigerio: bloque.esRefrigerio || false
+    });
+    this.editBloqueModalVisible.set(true);
+  }
 
+  cerrarEditBloqueModal() {
+    this.editBloqueModalVisible.set(false);
+    this.bloqueToEdit.set(null);
+  }
+
+  actualizarBloqueSubmit() {
+    if (this.editBloqueForm.invalid || !this.bloqueToEdit()) return;
+
+    let { horaInicio, horaFin, esRefrigerio } = this.editBloqueForm.value;
     const dto = {
-      horaInicio: nuevoInicio.length === 5 ? nuevoInicio + ":00" : nuevoInicio,
-      horaFin: nuevoFin.length === 5 ? nuevoFin + ":00" : nuevoFin,
+      horaInicio: horaInicio.length === 5 ? horaInicio + ":00" : horaInicio,
+      horaFin: horaFin.length === 5 ? horaFin + ":00" : horaFin,
       esRefrigerio: esRefrigerio
     };
 
-    this.httpService.editarBloque(bloque.id, dto).subscribe({
-      next: () => this.cargarBloquesDelTurno(this.selectedTurnoForManager().id),
+    this.httpService.editarBloque(this.bloqueToEdit().id, dto).subscribe({
+      next: () => {
+        alert("Bloque actualizado correctamente");
+        this.cargarBloquesDelTurno(this.selectedTurnoForManager().id);
+        this.cerrarEditBloqueModal();
+      },
       error: () => alert("Error al editar bloque")
     });
   }
 
   eliminarBloque(bloqueId: number) {
-    if (!confirm("¿Seguro que desea eliminar este bloque?")) return;
+    if (!window.confirm("¿Seguro que desea eliminar este bloque?")) return;
     this.httpService.eliminarBloque(bloqueId).subscribe({
       next: () => this.cargarBloquesDelTurno(this.selectedTurnoForManager().id),
       error: () => alert("Error al eliminar bloque")
@@ -324,8 +351,8 @@ export default class AdminBoardComponent implements OnInit {
     });
   }
 
-  // ==== MÉTODOS DE CICLO DE VIDA (NUEVO SRP) ====
-  
+  // ==== MÉTODOS DE CICLO DE VIDA ====
+
   onCancelarInstalacion(id: number) {
     if (window.confirm('¿Está seguro de cancelar esta instalación? Se liberarán los recursos.')) {
       this.httpService.cancelarInstalacion(id).subscribe({
@@ -386,7 +413,7 @@ export default class AdminBoardComponent implements OnInit {
 
   reprogramarInstalacionSubmit() {
     if (this.reprogramarForm.invalid || !this.instToReprogramar()) return;
-    
+
     const dto = {
       nuevaFecha: this.reprogramarForm.value.nuevaFecha,
       motivo: this.reprogramarForm.value.motivo

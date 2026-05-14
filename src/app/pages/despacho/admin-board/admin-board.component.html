@@ -1,357 +1,466 @@
 <div class="p-6 bg-gray-50 min-h-screen">
   <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
     <h1 class="text-2xl font-bold text-gray-800">Centro de Mando de Despacho</h1>
-    
+
     <!-- Tab Navigation -->
     <div class="flex space-x-2 bg-white p-1 rounded-lg shadow-sm">
-      <button (click)="setTab('tablero')" 
-              [ngClass]="activeTab() === 'tablero' ? 'bg-[#008d92] text-white' : 'text-gray-600 hover:bg-gray-100'"
-              class="px-4 py-2 text-sm font-medium rounded-md transition-colors">Tablero Operativo</button>
-      <button (click)="setTab('turnos')" 
-              [ngClass]="activeTab() === 'turnos' ? 'bg-[#008d92] text-white' : 'text-gray-600 hover:bg-gray-100'"
-              class="px-4 py-2 text-sm font-medium rounded-md transition-colors">Gestión de Turnos</button>
-      <button (click)="setTab('equipo')" 
-              [ngClass]="activeTab() === 'equipo' ? 'bg-[#008d92] text-white' : 'text-gray-600 hover:bg-gray-100'"
-              class="px-4 py-2 text-sm font-medium rounded-md transition-colors">Equipo Técnico</button>
+      <button (click)="setTab('tablero')"
+        [ngClass]="activeTab() === 'tablero' ? 'bg-[#008d92] text-white' : 'text-gray-600 hover:bg-gray-100'"
+        class="px-4 py-2 text-sm font-medium rounded-md transition-colors">Tablero Operativo</button>
+      <button (click)="setTab('turnos')"
+        [ngClass]="activeTab() === 'turnos' ? 'bg-[#008d92] text-white' : 'text-gray-600 hover:bg-gray-100'"
+        class="px-4 py-2 text-sm font-medium rounded-md transition-colors">Gestión de Turnos</button>
+      <button (click)="setTab('equipo')"
+        [ngClass]="activeTab() === 'equipo' ? 'bg-[#008d92] text-white' : 'text-gray-600 hover:bg-gray-100'"
+        class="px-4 py-2 text-sm font-medium rounded-md transition-colors">Equipo Técnico</button>
     </div>
   </div>
 
   <!-- TAB: TABLERO OPERATIVO -->
   @if (activeTab() === 'tablero') {
-    <div class="mb-4 flex flex-col md:flex-row gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100 items-center justify-between">
-      <div class="flex gap-4 items-center">
-        <label class="text-sm font-medium text-gray-700">Fecha:</label>
-        <input type="date" [ngModel]="fechaSelect()" (ngModelChange)="setFechaSelect($event); onFilterChange()" class="border border-gray-300 rounded p-2 text-gray-700 bg-white focus:ring-[#008d92] focus:border-[#008d92]">
+  <div
+    class="mb-4 flex flex-col md:flex-row gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100 items-center justify-between">
+    <div class="flex gap-4 items-center">
+      <label class="text-sm font-medium text-gray-700">Fecha:</label>
+      <input type="date" [ngModel]="fechaSelect()" (ngModelChange)="setFechaSelect($event); onFilterChange()"
+        class="border border-gray-300 rounded p-2 text-gray-700 bg-white focus:ring-[#008d92] focus:border-[#008d92]">
+    </div>
+    <div class="flex flex-1 max-w-xl w-full relative gap-2">
+      <select [ngModel]="criterioBusqueda()" (ngModelChange)="criterioBusqueda.set($event)"
+        class="border border-gray-300 rounded p-2 focus:ring-[#008d92] focus:border-[#008d92] bg-white">
+        <option value="DOCUMENTO">Documento (DNI/CE)</option>
+        <option value="NOMBRE">Nombre/Apellido</option>
+        <option value="CELULAR">Celular</option>
+      </select>
+      <div class="flex flex-1 relative">
+        <input type="text" [ngModel]="globalSearchTerm()" (ngModelChange)="globalSearchTerm.set($event)"
+          (keyup.enter)="buscarInstalacionesGlobal()" placeholder="Buscar instalación..."
+          class="w-full border border-gray-300 rounded-l p-2 focus:ring-[#008d92] focus:border-[#008d92]">
+        <button (click)="buscarInstalacionesGlobal()"
+          class="bg-[#008d92] hover:bg-[#0a6067] text-white px-4 py-2 rounded-r transition-colors"><i
+            class="fas fa-search"></i></button>
       </div>
-      <div class="flex flex-1 max-w-xl w-full relative gap-2">
-        <select [ngModel]="criterioBusqueda()" (ngModelChange)="criterioBusqueda.set($event)" class="border border-gray-300 rounded p-2 focus:ring-[#008d92] focus:border-[#008d92] bg-white">
-          <option value="DOCUMENTO">Documento (DNI/CE)</option>
-          <option value="NOMBRE">Nombre/Apellido</option>
-          <option value="CELULAR">Celular</option>
-        </select>
-        <div class="flex flex-1 relative">
-          <input type="text" [ngModel]="globalSearchTerm()" (ngModelChange)="globalSearchTerm.set($event)" (keyup.enter)="buscarInstalacionesGlobal()" placeholder="Buscar instalación..." class="w-full border border-gray-300 rounded-l p-2 focus:ring-[#008d92] focus:border-[#008d92]">
-          <button (click)="buscarInstalacionesGlobal()" class="bg-[#008d92] hover:bg-[#0a6067] text-white px-4 py-2 rounded-r transition-colors"><i class="fas fa-search"></i></button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Columna Izquierda: Instalaciones Pendientes -->
+    <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-yellow-500">
+      <h2 class="text-xl font-semibold mb-4 text-gray-700">Instalaciones Pendientes</h2>
+      @if (state.instalacionesPendientes().length === 0) {
+      <p class="text-gray-500 text-center py-4">No hay instalaciones pendientes en esta fecha.</p>
+      }
+      <div class="space-y-4">
+        @for (inst of state.instalacionesPendientes(); track inst.id) {
+        @if (inst.estado === 'PENDIENTE') {
+        <div
+          class="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer relative overflow-hidden group"
+          (click)="selectInstalacion(inst)">
+          <div class="absolute top-0 left-0 w-1 h-full bg-yellow-400 group-hover:bg-[#008d92] transition-colors"></div>
+          <div class="flex justify-between items-start pl-2">
+            <div>
+              <h3 class="font-bold text-gray-800">{{ inst.nombreCliente }}</h3>
+              <p class="text-sm text-gray-600 mt-1"><i class="fas fa-map-marker-alt text-[#008d92] mr-2"></i>{{
+                inst.direccionCompleta }}</p>
+              <p class="text-xs text-gray-500 mt-2">ID Contrato: #{{ inst.contratoId }} | Franja/Turno: {{
+                inst.franjaHoraria }}</p>
+            </div>
+            <div class="flex flex-col items-end gap-2">
+              <span
+                class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-yellow-200">
+                {{ inst.estado }}
+              </span>
+              <div class="flex gap-2">
+                <button (click)="$event.stopPropagation(); onCancelarInstalacion(inst.id)"
+                  class="text-xs px-2 py-1 bg-red-50 hover:bg-red-100 text-red-700 rounded border border-red-200"><i
+                    class="fas fa-trash-alt"></i> Cancelar</button>
+                <button (click)="$event.stopPropagation(); abrirReprogramarModal(inst)"
+                  class="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300">Reprogramar</button>
+              </div>
+            </div>
+          </div>
         </div>
+        }
+        }
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <!-- Columna Izquierda: Instalaciones Pendientes -->
-      <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-yellow-500">
-        <h2 class="text-xl font-semibold mb-4 text-gray-700">Instalaciones Pendientes</h2>
-        @if (state.instalacionesPendientes().length === 0) {
-          <p class="text-gray-500 text-center py-4">No hay instalaciones pendientes en esta fecha.</p>
-        }
-        <div class="space-y-4">
-          @for (inst of state.instalacionesPendientes(); track inst.id) {
-            @if (inst.estado === 'PENDIENTE') {
-              <div class="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer relative overflow-hidden group" (click)="selectInstalacion(inst)">
-                <div class="absolute top-0 left-0 w-1 h-full bg-yellow-400 group-hover:bg-[#008d92] transition-colors"></div>
-                <div class="flex justify-between items-start pl-2">
-                  <div>
-                    <h3 class="font-bold text-gray-800">{{ inst.nombreCliente }}</h3>
-                    <p class="text-sm text-gray-600 mt-1"><i class="fas fa-map-marker-alt text-[#008d92] mr-2"></i>{{ inst.direccionCompleta }}</p>
-                    <p class="text-xs text-gray-500 mt-2">ID Contrato: #{{ inst.contratoId }} | Franja/Turno: {{ inst.franjaHoraria }}</p>
-                  </div>
-                  <div class="flex flex-col items-end gap-2">
-                    <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-yellow-200">
-                      {{ inst.estado }}
-                    </span>
-                    <div class="flex gap-2">
-                      <button (click)="$event.stopPropagation(); onCancelarInstalacion(inst.id)" class="text-xs px-2 py-1 bg-red-50 hover:bg-red-100 text-red-700 rounded border border-red-200"><i class="fas fa-trash-alt"></i> Cancelar</button>
-                      <button (click)="$event.stopPropagation(); abrirReprogramarModal(inst)" class="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300">Reprogramar</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            }
-          }
-        </div>
-      </div>
+    <!-- Columna Derecha: Rutas Asignadas -->
+    <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-[#008d92]">
+      <h2 class="text-xl font-semibold mb-4 text-gray-700">Rutas Asignadas</h2>
 
-      <!-- Columna Derecha: Rutas Asignadas -->
-      <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-[#008d92]">
-        <h2 class="text-xl font-semibold mb-4 text-gray-700">Rutas Asignadas</h2>
-
-        @if (selectedInstalacion()) {
-          <div class="mb-6 p-4 bg-[#f0f9fa] border border-[#b2e2e4] rounded-lg">
-            <h3 class="font-semibold text-gray-800 mb-2">Asignar Técnico a {{ selectedInstalacion().nombreCliente }}</h3>
-            <form [formGroup]="assignForm" (ngSubmit)="asignarRuta()" class="flex flex-col gap-3">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Técnico</label>
-                <select formControlName="tecnicoId" class="w-full border border-gray-300 rounded p-2 focus:ring-[#008d92]" (change)="onTecnicoSelected($event)">
-                  <option [ngValue]="null">-- Seleccione Técnico --</option>
-                  @for (tecnico of state.listaTecnicos(); track tecnico.id) {
-                    <option [value]="tecnico.id">{{ tecnico.nombre }}</option>
-                  }
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Bloque Asignado</label>
-                <select formControlName="bloqueId" class="w-full border border-gray-300 rounded p-2 focus:ring-[#008d92]" [disabled]="tecnicoBloques().length === 0">
-                  <option [ngValue]="null">-- Seleccione Bloque --</option>
-                  @for (bloque of tecnicoBloques(); track bloque.id) {
-                    <option [value]="bloque.id" [disabled]="bloque.esRefrigerio">
-                      {{ bloque.horaInicio }} - {{ bloque.horaFin }} {{ bloque.esRefrigerio ? '(Refrigerio)' : '' }}
-                    </option>
-                  }
-                </select>
-              </div>
-              <div class="flex justify-end gap-2 mt-2">
-                <button type="button" class="px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded" (click)="selectedInstalacion.set(null)">Cancelar</button>
-                <button type="submit" [disabled]="assignForm.invalid" class="px-4 py-2 text-sm text-white bg-[#008d92] hover:bg-[#0a6067] rounded disabled:opacity-50 transition-colors">Asignar Ruta</button>
-              </div>
-            </form>
+      @if (selectedInstalacion()) {
+      <div class="mb-6 p-4 bg-[#f0f9fa] border border-[#b2e2e4] rounded-lg">
+        <h3 class="font-semibold text-gray-800 mb-2">Asignar Técnico a {{ selectedInstalacion().nombreCliente }}</h3>
+        <form [formGroup]="assignForm" (ngSubmit)="asignarRuta()" class="flex flex-col gap-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Técnico</label>
+            <select formControlName="tecnicoId" class="w-full border border-gray-300 rounded p-2 focus:ring-[#008d92]"
+              (change)="onTecnicoSelected($event)">
+              <option [ngValue]="null">-- Seleccione Técnico --</option>
+              @for (tecnico of state.listaTecnicos(); track tecnico.id) {
+              <option [value]="tecnico.id">{{ tecnico.nombre }}</option>
+              }
+            </select>
           </div>
-        }
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Bloque Asignado</label>
+            <select formControlName="bloqueId" class="w-full border border-gray-300 rounded p-2 focus:ring-[#008d92]"
+              [disabled]="tecnicoBloques().length === 0">
+              <option [ngValue]="null">-- Seleccione Bloque --</option>
+              @for (bloque of tecnicoBloques(); track bloque.id) {
+              <option [value]="bloque.id" [disabled]="bloque.esRefrigerio">
+                {{ bloque.horaInicio }} - {{ bloque.horaFin }} {{ bloque.esRefrigerio ? '(Refrigerio)' : '' }}
+              </option>
+              }
+            </select>
+          </div>
+          <div class="flex justify-end gap-2 mt-2">
+            <button type="button" class="px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded"
+              (click)="selectedInstalacion.set(null)">Cancelar</button>
+            <button type="submit" [disabled]="assignForm.invalid"
+              class="px-4 py-2 text-sm text-white bg-[#008d92] hover:bg-[#0a6067] rounded disabled:opacity-50 transition-colors">Asignar
+              Ruta</button>
+          </div>
+        </form>
+      </div>
+      }
 
-        <div class="space-y-4">
-          @for (inst of asignadas(); track inst.id) {
-            <div class="border border-gray-200 rounded-lg p-4 flex flex-col gap-3 relative overflow-hidden pl-5">
-              <div class="absolute top-0 left-0 w-1 h-full" 
-                   [ngClass]="{'bg-[#008d92]': inst.estado === 'COMPLETADA', 'bg-red-500': inst.estado === 'CANCELADA', 'bg-blue-500': inst.estado === 'EN_RUTA', 'bg-yellow-500': inst.estado === 'EN_PROCESO'}">
-              </div>
-              
-              <div class="flex justify-between items-start">
-                <div>
-                  <h3 class="font-bold text-gray-800">{{ inst.nombreCliente }}</h3>
-                  <p class="text-sm text-gray-600 mt-1">{{ inst.direccionCompleta }}</p>
-                  <p class="text-xs text-gray-500 mt-1">Franja: {{ inst.franjaHoraria }} | Téc: {{ inst.tecnicoNombre }}</p>
-                </div>
-                <span class="text-xs font-semibold px-2.5 py-0.5 rounded border"
-                      [ngClass]="{
+      <div class="space-y-4">
+        @for (inst of asignadas(); track inst.id) {
+        <div class="border border-gray-200 rounded-lg p-4 flex flex-col gap-3 relative overflow-hidden pl-5">
+          <div class="absolute top-0 left-0 w-1 h-full"
+            [ngClass]="{'bg-[#008d92]': inst.estado === 'COMPLETADA', 'bg-red-500': inst.estado === 'CANCELADA', 'bg-blue-500': inst.estado === 'EN_RUTA', 'bg-yellow-500': inst.estado === 'EN_PROCESO'}">
+          </div>
+
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="font-bold text-gray-800">{{ inst.nombreCliente }}</h3>
+              <p class="text-sm text-gray-600 mt-1">{{ inst.direccionCompleta }}</p>
+              <p class="text-xs text-gray-500 mt-1">Franja: {{ inst.franjaHoraria }} | Téc: {{ inst.tecnicoNombre }}</p>
+            </div>
+            <span class="text-xs font-semibold px-2.5 py-0.5 rounded border" [ngClass]="{
                         'bg-[#e6f4f5] text-[#008d92] border-[#b2e2e4]': inst.estado === 'COMPLETADA',
                         'bg-red-100 text-red-800 border-red-200': inst.estado === 'CANCELADA',
                         'bg-blue-100 text-blue-800 border-blue-200': inst.estado === 'EN_RUTA',
                         'bg-yellow-100 text-yellow-800 border-yellow-200': inst.estado === 'EN_PROCESO'
                       }">
-                  {{ inst.estado }}
-                </span>
-              </div>
-              
-              <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-100 items-center justify-between">
-                <div class="flex gap-2">
-                  <button (click)="onCancelarInstalacion(inst.id)" class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded transition-colors">Cancelar</button>
-                  <button (click)="onCompletarInstalacion(inst.id)" class="text-xs px-3 py-1 text-white rounded transition-colors bg-[#008d92] hover:bg-[#0a6067]">Completar</button>
-                  <button (click)="abrirReprogramarModal(inst)" class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded transition-colors">Reprogramar</button>
-                </div>
-                @if (inst.celularCliente) {
-                  <a [href]="'https://wa.me/51' + inst.celularCliente" target="_blank" class="text-xs px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded transition-colors flex items-center gap-1"><i class="fab fa-whatsapp"></i> Contactar</a>
-                }
-              </div>
+              {{ inst.estado }}
+            </span>
+          </div>
+
+          <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-100 items-center justify-between">
+            <div class="flex gap-2">
+              <button (click)="onCancelarInstalacion(inst.id)"
+                class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded transition-colors">Cancelar</button>
+              <button (click)="onCompletarInstalacion(inst.id)"
+                class="text-xs px-3 py-1 text-white rounded transition-colors bg-[#008d92] hover:bg-[#0a6067]">Completar</button>
+              <button (click)="abrirReprogramarModal(inst)"
+                class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded transition-colors">Reprogramar</button>
             </div>
-          }
+            @if (inst.celularCliente) {
+            <a [href]="'https://wa.me/51' + inst.celularCliente" target="_blank"
+              class="text-xs px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded transition-colors flex items-center gap-1"><i
+                class="fab fa-whatsapp"></i> Contactar</a>
+            }
+          </div>
         </div>
+        }
       </div>
     </div>
+  </div>
   }
 
   <!-- TAB: GESTIÓN DE TURNOS -->
   @if (activeTab() === 'turnos') {
-    <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-indigo-500 mb-8">
-      <h2 class="text-xl font-semibold mb-4 text-gray-700">Crear Nuevo Turno</h2>
-      <form [formGroup]="turnoForm" (ngSubmit)="crearTurno()" class="flex flex-col md:flex-row gap-4 items-end">
-        <div class="flex-1">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Hora Inicio</label>
-          <input formControlName="horaInicio" type="time" class="w-full border border-gray-300 rounded p-2 focus:ring-indigo-500">
-        </div>
-        <div class="flex-1">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Hora Fin</label>
-          <input formControlName="horaFin" type="time" class="w-full border border-gray-300 rounded p-2 focus:ring-indigo-500">
-        </div>
-        <button type="submit" [disabled]="turnoForm.invalid" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-medium disabled:opacity-50 h-10">Generar Turno</button>
-      </form>
-    </div>
-
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h2 class="text-xl font-semibold mb-4 text-gray-700">Turnos Existentes</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        @for (turno of turnosDisponibles(); track turno.id) {
-          <div class="border border-gray-200 rounded-lg p-4 shadow-sm relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
-            <div class="pl-2">
-              <h3 class="font-bold text-gray-800 text-lg mb-1">{{ turno.nombre }}</h3>
-              <p class="text-sm text-gray-600 mb-3"><i class="far fa-clock text-indigo-500 mr-2"></i>{{ turno.horaInicio }} - {{ turno.horaFin }}</p>
-              <button (click)="gestionarBloques(turno)" class="w-full px-3 py-2 text-sm text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded transition-colors border border-indigo-200">Gestionar Bloques</button>
-            </div>
-          </div>
-        }
+  <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-indigo-500 mb-8">
+    <h2 class="text-xl font-semibold mb-4 text-gray-700">Crear Nuevo Turno</h2>
+    <form [formGroup]="turnoForm" (ngSubmit)="crearTurno()" class="flex flex-col md:flex-row gap-4 items-end">
+      <div class="flex-1">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Hora Inicio</label>
+        <input formControlName="horaInicio" type="time"
+          class="w-full border border-gray-300 rounded p-2 focus:ring-indigo-500">
       </div>
-    </div>
+      <div class="flex-1">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Hora Fin</label>
+        <input formControlName="horaFin" type="time"
+          class="w-full border border-gray-300 rounded p-2 focus:ring-indigo-500">
+      </div>
+      <button type="submit" [disabled]="turnoForm.invalid"
+        class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-medium disabled:opacity-50 h-10">Generar
+        Turno</button>
+    </form>
+  </div>
 
-    <!-- Gestión de Bloques Modal / Panel (Inline for simplicity) -->
-    @if (selectedTurnoForManager()) {
-      <div class="mt-8 bg-white rounded-lg shadow-md p-6 border-t-4 border-indigo-300">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-semibold text-gray-700">Bloques del {{ selectedTurnoForManager().nombre }}</h2>
-          <button (click)="selectedTurnoForManager.set(null)" class="text-gray-500 hover:text-red-500"><i class="fas fa-times"></i> Cerrar</button>
-        </div>
-        
-        <form [formGroup]="bloqueForm" (ngSubmit)="agregarBloque()" class="flex flex-col md:flex-row gap-4 items-end bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
-          <div class="flex-1">
-            <label class="block text-xs font-medium text-gray-700 mb-1">Hora Inicio</label>
-            <input formControlName="horaInicio" type="time" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-indigo-500">
-          </div>
-          <div class="flex-1">
-            <label class="block text-xs font-medium text-gray-700 mb-1">Hora Fin</label>
-            <input formControlName="horaFin" type="time" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-indigo-500">
-          </div>
-          <div class="flex items-center gap-2 mb-2">
-            <input formControlName="esRefrigerio" type="checkbox" id="esRef" class="rounded text-indigo-600 focus:ring-indigo-500">
-            <label for="esRef" class="text-sm text-gray-700">¿Es Refrigerio?</label>
-          </div>
-          <button type="submit" [disabled]="bloqueForm.invalid" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded font-medium disabled:opacity-50 h-[38px]">Añadir Bloque</button>
-        </form>
-
-        <div class="space-y-2">
-          @if (turnoBloques().length === 0) {
-            <p class="text-gray-500 text-sm text-center py-2">No hay bloques registrados para este turno.</p>
-          }
-          @for (b of turnoBloques(); track b.id) {
-            <div class="flex justify-between items-center p-3 bg-white border border-gray-200 rounded shadow-sm">
-              <div class="flex items-center gap-2">
-                <span class="text-gray-800 font-medium"><i class="far fa-clock text-gray-400 mr-2"></i>{{ b.horaInicio }} - {{ b.horaFin }}</span>
-                @if (b.esRefrigerio) {
-                  <span class="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded font-semibold">Refrigerio</span>
-                } @else {
-                  <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">Operativo</span>
-                }
-              </div>
-              <div class="flex gap-2">
-                <button (click)="editarBloque(b)" class="text-indigo-600 hover:text-indigo-800" title="Editar"><i class="fas fa-edit"></i></button>
-                <button (click)="eliminarBloque(b.id)" class="text-red-500 hover:text-red-700" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
-              </div>
-            </div>
-          }
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <h2 class="text-xl font-semibold mb-4 text-gray-700">Turnos Existentes</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      @for (turno of turnosDisponibles(); track turno.id) {
+      <div class="border border-gray-200 rounded-lg p-4 shadow-sm relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+        <div class="pl-2">
+          <h3 class="font-bold text-gray-800 text-lg mb-1">{{ turno.nombre }}</h3>
+          
+          <p class="text-sm text-gray-600 mb-3"><i class="far fa-clock text-indigo-500 mr-2"></i>{{ turno.horaInicio }}
+            - {{ turno.horaFin }}</p>
+          <button (click)="gestionarBloques(turno)"
+            class="w-full px-3 py-2 text-sm text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded transition-colors border border-indigo-200">Gestionar
+            Bloques</button>
         </div>
       </div>
-    }
+      }
+    </div>
+  </div>
+
+  <!-- Gestión de Bloques Modal / Panel (Inline for simplicity) -->
+  @if (selectedTurnoForManager()) {
+  <div class="mt-8 bg-white rounded-lg shadow-md p-6 border-t-4 border-indigo-300">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-gray-700">Bloques del {{ selectedTurnoForManager().nombre }}</h2>
+      <button (click)="selectedTurnoForManager.set(null)" class="text-gray-500 hover:text-red-500"><i
+          class="fas fa-times"></i> Cerrar</button>
+    </div>
+
+    <form [formGroup]="bloqueForm" (ngSubmit)="agregarBloque()"
+      class="flex flex-col md:flex-row gap-4 items-end bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
+      <div class="flex-1">
+        <label class="block text-xs font-medium text-gray-700 mb-1">Hora Inicio</label>
+        <input formControlName="horaInicio" type="time"
+          class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-indigo-500">
+      </div>
+      <div class="flex-1">
+        <label class="block text-xs font-medium text-gray-700 mb-1">Hora Fin</label>
+        <input formControlName="horaFin" type="time"
+          class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-indigo-500">
+      </div>
+      <div class="flex items-center gap-2 mb-2">
+        <input formControlName="esRefrigerio" type="checkbox" id="esRef"
+          class="rounded text-indigo-600 focus:ring-indigo-500">
+        <label for="esRef" class="text-sm text-gray-700">¿Es Refrigerio?</label>
+      </div>
+      <button type="submit" [disabled]="bloqueForm.invalid"
+        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded font-medium disabled:opacity-50 h-[38px]">Añadir
+        Bloque</button>
+    </form>
+
+    <div class="space-y-2">
+      @if (turnoBloques().length === 0) {
+      <p class="text-gray-500 text-sm text-center py-2">No hay bloques registrados para este turno.</p>
+      }
+      @for (b of turnoBloques(); track b.id) {
+      <div class="flex justify-between items-center p-3 bg-white border border-gray-200 rounded shadow-sm">
+        <div class="flex items-center gap-2">
+          <span class="text-gray-800 font-medium"><i class="far fa-clock text-gray-400 mr-2"></i>{{ b.horaInicio }} - {{
+            b.horaFin }}</span>
+          @if (b.esRefrigerio) {
+          <span class="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded font-semibold">Refrigerio</span>
+          } @else {
+          <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">Operativo</span>
+          }
+        </div>
+        <div class="flex gap-2">
+          <button (click)="editarBloque(b)" class="text-indigo-600 hover:text-indigo-800" title="Editar"><i
+              class="fas fa-edit"></i></button>
+          <button (click)="eliminarBloque(b.id)" class="text-red-500 hover:text-red-700" title="Eliminar"><i
+              class="fas fa-trash-alt"></i></button>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  }
   }
 
   <!-- TAB: EQUIPO TÉCNICO -->
   @if (activeTab() === 'equipo') {
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h2 class="text-xl font-semibold mb-4 text-gray-700">Asignar Turnos a Técnicos</h2>
-      
-      <div class="flex flex-col md:flex-row gap-4 mb-6">
-        <div class="flex-1 relative">
-          <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" (keyup.enter)="buscarTecnicoResumen()" 
-                 placeholder="Buscar por DNI, Nombre o Celular..." 
-                 class="w-full border border-gray-300 rounded-l p-3 focus:ring-[#008d92] focus:border-[#008d92]">
-        </div>
-        <button (click)="buscarTecnicoResumen()" class="px-6 py-3 bg-[#008d92] text-white rounded-r font-medium hover:bg-[#0a6067] transition-colors">Buscar Técnico</button>
-      </div>
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <h2 class="text-xl font-semibold mb-4 text-gray-700">Asignar Turnos a Técnicos</h2>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        @for (tecnico of tecnicosBuscados(); track tecnico.id) {
-          <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow relative">
-            <div class="flex justify-between items-start mb-2">
-              <h3 class="font-bold text-gray-800">{{ tecnico.nombreCompleto }}</h3>
-              @if (!tecnico.turnoId) {
-                <span class="bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded">Sin Turno</span>
-              } @else {
-                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded">{{ tecnico.turnoNombre }}</span>
-              }
-            </div>
-            <p class="text-sm text-gray-600 mb-1"><i class="far fa-id-card w-4"></i> {{ tecnico.documento }}</p>
-            <p class="text-sm text-gray-600 mb-4"><i class="fas fa-mobile-alt w-4"></i> {{ tecnico.celular }}</p>
-
-            <div class="pt-3 border-t border-gray-100">
-              <label class="block text-xs font-medium text-gray-500 mb-1">Cambiar / Asignar Turno:</label>
-              <select class="w-full text-sm border border-gray-300 rounded p-1 focus:ring-[#008d92]" 
-                      (change)="guardarTurnoTecnico(tecnico.id, $event)">
-                <option value="">-- Seleccionar Turno --</option>
-                @for (t of turnosDisponibles(); track t.id) {
-                  <option [value]="t.id" [selected]="t.id === tecnico.turnoId">{{ t.nombre }} ({{ t.horaInicio }} - {{ t.horaFin }})</option>
-                }
-              </select>
-            </div>
-          </div>
-        }
+    <div class="flex flex-col md:flex-row gap-4 mb-6">
+      <div class="flex-1 relative">
+        <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+          (keyup.enter)="buscarTecnicoResumen()" placeholder="Buscar por DNI, Nombre o Celular..."
+          class="w-full border border-gray-300 rounded-l p-3 focus:ring-[#008d92] focus:border-[#008d92]">
       </div>
-
-      <!-- Pagination Controls -->
-      <div class="mt-6 flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
-        <button (click)="prevPage()" [disabled]="currentPage() === 0" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-100 disabled:opacity-50 transition-colors"><i class="fas fa-chevron-left mr-2"></i> Anterior</button>
-        <span class="text-sm text-gray-600 font-medium">
-          Página {{ currentPage() + 1 }} de {{ totalPages() === 0 ? 1 : totalPages() }}
-        </span>
-        <button (click)="nextPage()" [disabled]="currentPage() >= totalPages() - 1" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-100 disabled:opacity-50 transition-colors">Siguiente <i class="fas fa-chevron-right ml-2"></i></button>
-      </div>
+      <button (click)="buscarTecnicoResumen()"
+        class="px-6 py-3 bg-[#008d92] text-white rounded-r font-medium hover:bg-[#0a6067] transition-colors">Buscar
+        Técnico</button>
     </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (tecnico of tecnicosBuscados(); track tecnico.id) {
+      <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow relative">
+        <div class="flex justify-between items-start mb-2">
+          <h3 class="font-bold text-gray-800">{{ tecnico.nombreCompleto }}</h3>
+          @if (!tecnico.turnoId) {
+          <span class="bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded">Sin Turno</span>
+          } @else {
+          <span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded">{{ tecnico.turnoNombre
+            }}</span>
+          }
+        </div>
+        <p class="text-sm text-gray-600 mb-1"><i class="far fa-id-card w-4"></i> {{ tecnico.documento }}</p>
+        <p class="text-sm text-gray-600 mb-4"><i class="fas fa-mobile-alt w-4"></i> {{ tecnico.celular }}</p>
+
+        <div class="pt-3 border-t border-gray-100">
+          <label class="block text-xs font-medium text-gray-500 mb-1">Cambiar / Asignar Turno:</label>
+          <select class="w-full text-sm border border-gray-300 rounded p-1 focus:ring-[#008d92]"
+            (change)="guardarTurnoTecnico(tecnico.id, $event)">
+            <option value="">-- Seleccionar Turno --</option>
+            @for (t of turnosDisponibles(); track t.id) {
+            <option [value]="t.id" [selected]="t.id === tecnico.turnoId">{{ t.nombre }} ({{ t.horaInicio }} - {{
+              t.horaFin }})</option>
+            }
+          </select>
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="mt-6 flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
+      <button (click)="prevPage()" [disabled]="currentPage() === 0"
+        class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-100 disabled:opacity-50 transition-colors"><i
+          class="fas fa-chevron-left mr-2"></i> Anterior</button>
+      <span class="text-sm text-gray-600 font-medium">
+        Página {{ currentPage() + 1 }} de {{ totalPages() === 0 ? 1 : totalPages() }}
+      </span>
+      <button (click)="nextPage()" [disabled]="currentPage() >= totalPages() - 1"
+        class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-100 disabled:opacity-50 transition-colors">Siguiente
+        <i class="fas fa-chevron-right ml-2"></i></button>
+    </div>
+  </div>
   }
 </div>
 
 <!-- MODAL BÚSQUEDA GLOBAL -->
 @if (searchModalVisible()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-      <div class="flex justify-between items-center p-4 border-b border-gray-200">
-        <h2 class="text-xl font-bold text-gray-800">Resultados de Búsqueda</h2>
-        <button (click)="cerrarSearchModal()" class="text-gray-500 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
-      </div>
-      <div class="p-4 overflow-y-auto flex-1 bg-gray-50">
-        @if (searchResults().length === 0) {
-          <p class="text-center text-gray-500 py-8">No se encontraron instalaciones para la búsqueda.</p>
-        }
-        <div class="space-y-4">
-          @for (inst of searchResults(); track inst.id) {
-            <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm flex flex-col md:flex-row justify-between gap-4">
-              <div>
-                <div class="flex gap-2 items-center mb-1">
-                  <h3 class="font-bold text-gray-800">{{ inst.nombreCliente }}</h3>
-                  <span class="text-xs font-semibold px-2 py-0.5 rounded border"
-                        [ngClass]="{'bg-[#e6f4f5] text-[#008d92] border-[#b2e2e4]': inst.estado === 'COMPLETADA', 'bg-red-100 text-red-800': inst.estado === 'CANCELADA', 'bg-blue-100 text-blue-800': inst.estado === 'EN_RUTA', 'bg-yellow-100 text-yellow-800': inst.estado === 'EN_PROCESO' || inst.estado === 'PENDIENTE'}">
-                    {{ inst.estado }}
-                  </span>
-                </div>
-                <p class="text-sm text-gray-600"><i class="fas fa-map-marker-alt text-gray-400 mr-2"></i>{{ inst.direccionCompleta }}</p>
-                <p class="text-xs text-gray-500 mt-1">Fecha Programada: {{ inst.fechaProgramada }} | Técnico: {{ inst.tecnicoNombre }}</p>
-              </div>
-              <div class="flex flex-wrap gap-2 items-end">
-                @if (inst.estado !== 'COMPLETADA' && inst.estado !== 'CANCELADA') {
-                  <button (click)="onCancelarInstalacion(inst.id)" class="text-sm px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded transition-colors">Cancelar</button>
-                  <button (click)="abrirReprogramarModal(inst)" class="text-sm px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded transition-colors">Reprogramar</button>
-                  <button (click)="onCompletarInstalacion(inst.id)" class="text-sm px-3 py-1.5 text-white rounded transition-colors bg-[#008d92] hover:bg-[#0a6067]">Completar</button>
-                }
-                @if (inst.celularCliente) {
-                  <a [href]="'https://wa.me/51' + inst.celularCliente" target="_blank" class="text-sm px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded transition-colors flex items-center gap-1"><i class="fab fa-whatsapp"></i> Contactar</a>
-                }
-              </div>
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+    <div class="flex justify-between items-center p-4 border-b border-gray-200">
+      <h2 class="text-xl font-bold text-gray-800">Resultados de Búsqueda</h2>
+      <button (click)="cerrarSearchModal()" class="text-gray-500 hover:text-red-500"><i
+          class="fas fa-times text-xl"></i></button>
+    </div>
+    <div class="p-4 overflow-y-auto flex-1 bg-gray-50">
+      @if (searchResults().length === 0) {
+      <p class="text-center text-gray-500 py-8">No se encontraron instalaciones para la búsqueda.</p>
+      }
+      <div class="space-y-4">
+        @for (inst of searchResults(); track inst.id) {
+        <div
+          class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm flex flex-col md:flex-row justify-between gap-4">
+          <div>
+            <div class="flex gap-2 items-center mb-1">
+              <h3 class="font-bold text-gray-800">{{ inst.nombreCliente }}</h3>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded border"
+                [ngClass]="{'bg-[#e6f4f5] text-[#008d92] border-[#b2e2e4]': inst.estado === 'COMPLETADA', 'bg-red-100 text-red-800': inst.estado === 'CANCELADA', 'bg-blue-100 text-blue-800': inst.estado === 'EN_RUTA', 'bg-yellow-100 text-yellow-800': inst.estado === 'EN_PROCESO' || inst.estado === 'PENDIENTE'}">
+                {{ inst.estado }}
+              </span>
             </div>
-          }
+            <p class="text-sm text-gray-600"><i class="fas fa-map-marker-alt text-gray-400 mr-2"></i>{{
+              inst.direccionCompleta }}</p>
+            <p class="text-xs text-gray-500 mt-1">Fecha Programada: {{ inst.fechaProgramada }} | Técnico: {{
+              inst.tecnicoNombre }}</p>
+          </div>
+          <div class="flex flex-wrap gap-2 items-end">
+            @if (inst.estado !== 'COMPLETADA' && inst.estado !== 'CANCELADA') {
+            <button (click)="onCancelarInstalacion(inst.id)"
+              class="text-sm px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded transition-colors">Cancelar</button>
+            <button (click)="abrirReprogramarModal(inst)"
+              class="text-sm px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded transition-colors">Reprogramar</button>
+            <button (click)="onCompletarInstalacion(inst.id)"
+              class="text-sm px-3 py-1.5 text-white rounded transition-colors bg-[#008d92] hover:bg-[#0a6067]">Completar</button>
+            }
+            @if (inst.celularCliente) {
+            <a [href]="'https://wa.me/51' + inst.celularCliente" target="_blank"
+              class="text-sm px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded transition-colors flex items-center gap-1"><i
+                class="fab fa-whatsapp"></i> Contactar</a>
+            }
+          </div>
         </div>
+        }
       </div>
     </div>
   </div>
+</div>
 }
 
 <!-- MODAL REPROGRAMACIÓN -->
 @if (reprogramarModalVisible() && instToReprogramar()) {
-  <div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
-      <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-        <h3 class="font-bold text-gray-800">Reprogramar Instalación</h3>
-        <button (click)="cerrarReprogramarModal()" class="text-gray-500 hover:text-red-500"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="p-4">
-        <p class="text-sm text-gray-600 mb-4">Vas a reprogramar la instalación de <strong>{{ instToReprogramar().nombreCliente }}</strong>. El técnico y bloque actuales se liberarán automáticamente.</p>
-        <form [formGroup]="reprogramarForm" (ngSubmit)="reprogramarInstalacionSubmit()" class="flex flex-col gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nueva Fecha</label>
-            <input type="date" formControlName="nuevaFecha" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-[#008d92] focus:border-[#008d92]">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Motivo de Reprogramación</label>
-            <textarea formControlName="motivo" rows="3" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-[#008d92] focus:border-[#008d92]" placeholder="Ej. Cliente no se encuentra en domicilio..."></textarea>
-          </div>
-          <div class="flex justify-end gap-2 mt-2">
-            <button type="button" (click)="cerrarReprogramarModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded font-medium transition-colors">Cancelar</button>
-            <button type="submit" [disabled]="reprogramarForm.invalid" class="px-4 py-2 bg-[#008d92] hover:bg-[#0a6067] text-white rounded font-medium disabled:opacity-50 transition-colors">Confirmar</button>
-          </div>
-        </form>
-      </div>
+<div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+      <h3 class="font-bold text-gray-800">Reprogramar Instalación</h3>
+      <button (click)="cerrarReprogramarModal()" class="text-gray-500 hover:text-red-500"><i
+          class="fas fa-times"></i></button>
+    </div>
+    <div class="p-4">
+      <p class="text-sm text-gray-600 mb-4">Vas a reprogramar la instalación de <strong>{{
+          instToReprogramar().nombreCliente }}</strong>. El técnico y bloque actuales se liberarán automáticamente.</p>
+      <form [formGroup]="reprogramarForm" (ngSubmit)="reprogramarInstalacionSubmit()" class="flex flex-col gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nueva Fecha</label>
+          <input type="date" formControlName="nuevaFecha"
+            class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-[#008d92] focus:border-[#008d92]">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Motivo de Reprogramación</label>
+          <textarea formControlName="motivo" rows="3"
+            class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-[#008d92] focus:border-[#008d92]"
+            placeholder="Ej. Cliente no se encuentra en domicilio..."></textarea>
+        </div>
+        <div class="flex justify-end gap-2 mt-2">
+          <button type="button" (click)="cerrarReprogramarModal()"
+            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded font-medium transition-colors">Cancelar</button>
+          <button type="submit" [disabled]="reprogramarForm.invalid"
+            class="px-4 py-2 bg-[#008d92] hover:bg-[#0a6067] text-white rounded font-medium disabled:opacity-50 transition-colors">Confirmar</button>
+        </div>
+      </form>
     </div>
   </div>
+</div>
+}
+
+<!-- MODAL EDICIÓN DE BLOQUE -->
+@if (editBloqueModalVisible() && bloqueToEdit()) {
+<div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+    <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+      <h3 class="font-bold text-gray-800">Editar Bloque Horario</h3>
+      <button (click)="cerrarEditBloqueModal()" class="text-gray-500 hover:text-red-500"><i
+          class="fas fa-times"></i></button>
+    </div>
+    <div class="p-4">
+      <p class="text-sm text-gray-600 mb-4">Modifica los detalles del bloque horario para el <strong>{{
+          selectedTurnoForManager()?.nombre }}</strong>.</p>
+      <form [formGroup]="editBloqueForm" (ngSubmit)="actualizarBloqueSubmit()" class="flex flex-col gap-4">
+        <div class="flex gap-4">
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Hora Inicio</label>
+            <input type="time" formControlName="horaInicio"
+              class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-indigo-500">
+          </div>
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Hora Fin</label>
+            <input type="time" formControlName="horaFin"
+              class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-indigo-500">
+          </div>
+        </div>
+        <div class="flex items-center gap-2 mt-2 bg-indigo-50 p-3 rounded border border-indigo-100">
+          <input type="checkbox" formControlName="esRefrigerio" id="editEsRef"
+            class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+          <label for="editEsRef" class="text-sm font-medium text-indigo-900">¿Asignar como Refrigerio?</label>
+        </div>
+        <div class="flex justify-end gap-2 mt-4">
+          <button type="button" (click)="cerrarEditBloqueModal()"
+            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded font-medium transition-colors">Cancelar</button>
+          <button type="submit" [disabled]="editBloqueForm.invalid"
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-medium disabled:opacity-50 transition-colors">Guardar
+            Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 }
