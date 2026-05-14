@@ -72,6 +72,10 @@ export default class AdminBoardComponent implements OnInit {
   editBloqueModalVisible = signal<boolean>(false);
   bloqueToEdit = signal<any>(null);
 
+  // Delete Bloque Modal
+  deleteBloqueModalVisible = signal<boolean>(false);
+  bloqueIdAEliminar = signal<number | null>(null);
+
   constructor() {
     this.assignForm = this.fb.group({
       tecnicoId: [null, Validators.required],
@@ -230,11 +234,20 @@ export default class AdminBoardComponent implements OnInit {
     });
   }
 
-  editarBloque(bloque: any) {
+  onEditarBloque(bloque: any) {
     this.bloqueToEdit.set(bloque);
+    
+    // Parseo seguro de horas (el backend podría enviar LocalTime como Array [HH, mm, ss] o String)
+    const parseTime = (time: any) => {
+      if (Array.isArray(time)) {
+        return `${time[0].toString().padStart(2, '0')}:${time[1].toString().padStart(2, '0')}`;
+      }
+      return time ? time.substring(0, 5) : '';
+    };
+
     this.editBloqueForm.patchValue({
-      horaInicio: bloque.horaInicio ? bloque.horaInicio.substring(0, 5) : '',
-      horaFin: bloque.horaFin ? bloque.horaFin.substring(0, 5) : '',
+      horaInicio: parseTime(bloque.horaInicio),
+      horaFin: parseTime(bloque.horaFin),
       esRefrigerio: bloque.esRefrigerio || false
     });
     this.editBloqueModalVisible.set(true);
@@ -265,12 +278,26 @@ export default class AdminBoardComponent implements OnInit {
     });
   }
 
-  eliminarBloque(bloqueId: number) {
-    if (!window.confirm("¿Seguro que desea eliminar este bloque?")) return;
-    this.httpService.eliminarBloque(bloqueId).subscribe({
-      next: () => this.cargarBloquesDelTurno(this.selectedTurnoForManager().id),
+  onEliminarBloque(bloqueId: number) {
+    this.bloqueIdAEliminar.set(bloqueId);
+    this.deleteBloqueModalVisible.set(true);
+  }
+
+  confirmarEliminacion() {
+    const id = this.bloqueIdAEliminar();
+    if (!id) return;
+    this.httpService.eliminarBloque(id).subscribe({
+      next: () => {
+        this.cargarBloquesDelTurno(this.selectedTurnoForManager().id);
+        this.cancelarEliminacion();
+      },
       error: () => alert("Error al eliminar bloque")
     });
+  }
+
+  cancelarEliminacion() {
+    this.deleteBloqueModalVisible.set(false);
+    this.bloqueIdAEliminar.set(null);
   }
 
   // ==== TABLERO OPERATIVO ====
