@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { DespachoHttpService } from '../../../core/infrastructure/despacho-http.service';
 import { DespachoStateService } from '../../../features/despacho/services/despacho-state.service';
 
+import { AuthService } from '../../../core/auth/auth.service';
+
 @Component({
   selector: 'app-tech-agenda',
   standalone: true,
@@ -14,25 +16,19 @@ import { DespachoStateService } from '../../../features/despacho/services/despac
 export default class TechAgendaComponent implements OnInit {
   private httpService = inject(DespachoHttpService);
   public state = inject(DespachoStateService);
+  private authService = inject(AuthService);
 
-  currentDate = new Date();
-  mesSelect = signal<number>(this.currentDate.getMonth() + 1);
-  anioSelect = signal<number>(this.currentDate.getFullYear());
-
-  setMesSelect(val: number) {
-    this.mesSelect.set(val);
-  }
-
-  setAnioSelect(val: number) {
-    this.anioSelect.set(val);
-  }
+  fechaSeleccionada = signal<string>(new Date().toISOString().split('T')[0]);
 
   ngOnInit(): void {
     this.loadAgenda();
   }
 
   loadAgenda() {
-    this.httpService.obtenerAgendaTecnico(this.mesSelect(), this.anioSelect()).subscribe({
+    const userId = this.authService.currentUser()?.id;
+    if (!userId) return;
+
+    this.httpService.obtenerAgendaTecnico(userId, this.fechaSeleccionada()).subscribe({
       next: (data) => this.state.setDelDia(data),
       error: (err) => console.error(err)
     });
@@ -40,6 +36,15 @@ export default class TechAgendaComponent implements OnInit {
 
   onDateChange() {
     this.loadAgenda();
+  }
+
+  onIniciarTrabajo(id: number) {
+    this.httpService.iniciarInstalacion(id).subscribe({
+      next: () => {
+        this.loadAgenda();
+      },
+      error: (err) => alert("Error al iniciar instalación: " + (err.error?.message || "Error interno"))
+    });
   }
 
   openMaps(direccion: string) {

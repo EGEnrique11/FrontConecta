@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { DespachoHttpService } from '../../../core/infrastructure/despacho-http.service';
 import { DespachoStateService } from '../../../features/despacho/services/despacho-state.service';
+import { InstalacionPendienteDTO } from '../../../core/models/despacho/despacho.model';
 
 @Component({
   selector: 'app-admin-board',
@@ -29,7 +30,7 @@ export default class AdminBoardComponent implements OnInit {
 
   // Form for assignment
   assignForm!: FormGroup;
-  selectedInstalacion = signal<any>(null);
+  selectedInstalacion = signal<InstalacionPendienteDTO | null>(null);
 
   // Tabs
   activeTab = signal<string>('tablero');
@@ -65,7 +66,7 @@ export default class AdminBoardComponent implements OnInit {
 
   // Reprogramar Modal
   reprogramarModalVisible = signal<boolean>(false);
-  instToReprogramar = signal<any>(null);
+  instToReprogramar = signal<InstalacionPendienteDTO | null>(null);
 
   // Edit Bloque Modal
   editBloqueForm!: FormGroup;
@@ -75,6 +76,12 @@ export default class AdminBoardComponent implements OnInit {
   // Delete Bloque Modal
   deleteBloqueModalVisible = signal<boolean>(false);
   bloqueIdAEliminar = signal<number | null>(null);
+
+  // Completar / Cancelar Instalacion Modals
+  completarModalVisible = signal<boolean>(false);
+  cancelarModalVisible = signal<boolean>(false);
+  instalacionIdACompletar = signal<number | null>(null);
+  instalacionIdACancelar = signal<number | null>(null);
 
   constructor() {
     this.assignForm = this.fb.group({
@@ -236,7 +243,7 @@ export default class AdminBoardComponent implements OnInit {
 
   onEditarBloque(bloque: any) {
     this.bloqueToEdit.set(bloque);
-    
+
     // Parseo seguro de horas (el backend podría enviar LocalTime como Array [HH, mm, ss] o String)
     const parseTime = (time: any) => {
       if (Array.isArray(time)) {
@@ -309,7 +316,7 @@ export default class AdminBoardComponent implements OnInit {
     });
   }
 
-  asignadas = signal<any[]>([]);
+  asignadas = signal<InstalacionPendienteDTO[]>([]);
 
   loadPendientes() {
     this.httpService.obtenerPendientes(this.fechaSelect(), this.franjaSelect()).subscribe({
@@ -332,10 +339,12 @@ export default class AdminBoardComponent implements OnInit {
     this.loadPendientes();
   }
 
-  selectInstalacion(inst: any) {
-    this.selectedInstalacion.set(inst);
-    this.assignForm.patchValue({ bloqueId: null, tecnicoId: null });
-    this.tecnicoBloques.set([]);
+  selectInstalacion(inst: InstalacionPendienteDTO) {
+    if (inst.estado === 'PENDIENTE' || inst.estado === 'REPROGRAMADA') {
+      this.selectedInstalacion.set(inst);
+      this.assignForm.patchValue({ bloqueId: null, tecnicoId: null });
+      this.tecnicoBloques.set([]);
+    }
   }
 
   onTecnicoSelected(event: any) {
@@ -361,14 +370,15 @@ export default class AdminBoardComponent implements OnInit {
   }
 
   asignarRuta() {
-    if (this.assignForm.invalid || !this.selectedInstalacion()) return;
+    const instalacion = this.selectedInstalacion();
+    if (this.assignForm.invalid || !instalacion) return;
 
     const dto = {
       tecnicoId: Number(this.assignForm.value.tecnicoId),
       bloqueId: Number(this.assignForm.value.bloqueId)
     };
 
-    this.httpService.asignarTecnico(this.selectedInstalacion().id, dto).subscribe({
+    this.httpService.asignarTecnico(instalacion.id, dto).subscribe({
       next: () => {
         alert("Ruta asignada");
         this.selectedInstalacion.set(null);
@@ -381,29 +391,51 @@ export default class AdminBoardComponent implements OnInit {
   // ==== MÉTODOS DE CICLO DE VIDA ====
 
   onCancelarInstalacion(id: number) {
-    if (window.confirm('¿Está seguro de cancelar esta instalación? Se liberarán los recursos.')) {
-      this.httpService.cancelarInstalacion(id).subscribe({
-        next: () => {
-          alert("Instalación cancelada exitosamente.");
-          this.loadPendientes();
-          if (this.searchModalVisible()) this.buscarInstalacionesGlobal();
-        },
-        error: (err) => alert("Error al cancelar: " + (err.error?.message || "Error interno"))
-      });
-    }
+    this.instalacionIdACancelar.set(id);
+    this.cancelarModalVisible.set(true);
+  }
+
+  confirmarCancelar() {
+    const id = this.instalacionIdACancelar();
+    if (!id) return;
+    
+    this.httpService.cancelarInstalacion(id).subscribe({
+      next: () => {
+        this.loadPendientes();
+        if (this.searchModalVisible()) this.buscarInstalacionesGlobal();
+        this.cerrarModalCancelar();
+      },
+      error: (err) => alert("Error al cancelar: " + (err.error?.message || "Error interno"))
+    });
+  }
+
+  cerrarModalCancelar() {
+    this.cancelarModalVisible.set(false);
+    this.instalacionIdACancelar.set(null);
   }
 
   onCompletarInstalacion(id: number) {
-    if (window.confirm('¿Confirmar finalización de esta instalación? El contrato se activará automáticamente.')) {
-      this.httpService.completarInstalacion(id).subscribe({
-        next: () => {
-          alert("Instalación completada.");
-          this.loadPendientes();
-          if (this.searchModalVisible()) this.buscarInstalacionesGlobal();
-        },
-        error: (err) => alert("Error al completar: " + (err.error?.message || "Error interno"))
-      });
-    }
+    this.instalacionIdACompletar.set(id);
+    this.completarModalVisible.set(true);
+  }
+
+  confirmarCompletar() {
+    const id = this.instalacionIdACompletar();
+    if (!id) return;
+    
+    this.httpService.completarInstalacion(id).subscribe({
+      next: () => {
+        this.loadPendientes();
+        if (this.searchModalVisible()) this.buscarInstalacionesGlobal();
+        this.cerrarModalCompletar();
+      },
+      error: (err) => alert("Error al completar: " + (err.error?.message || "Error interno"))
+    });
+  }
+
+  cerrarModalCompletar() {
+    this.completarModalVisible.set(false);
+    this.instalacionIdACompletar.set(null);
   }
 
   // ==== BUSCADOR GLOBAL ====
@@ -426,7 +458,7 @@ export default class AdminBoardComponent implements OnInit {
   }
 
   // ==== MODAL REPROGRAMAR ====
-  abrirReprogramarModal(inst: any) {
+  abrirReprogramarModal(inst: InstalacionPendienteDTO) {
     this.instToReprogramar.set(inst);
     this.reprogramarForm.patchValue({ nuevaFecha: '', motivo: '' });
     this.reprogramarModalVisible.set(true);
@@ -439,14 +471,15 @@ export default class AdminBoardComponent implements OnInit {
   }
 
   reprogramarInstalacionSubmit() {
-    if (this.reprogramarForm.invalid || !this.instToReprogramar()) return;
+    const instalacion = this.instToReprogramar();
+    if (this.reprogramarForm.invalid || !instalacion) return;
 
     const dto = {
       nuevaFecha: this.reprogramarForm.value.nuevaFecha,
       motivo: this.reprogramarForm.value.motivo
     };
 
-    this.httpService.reprogramarInstalacion(this.instToReprogramar().id, dto).subscribe({
+    this.httpService.reprogramarInstalacion(instalacion.id, dto).subscribe({
       next: () => {
         alert("Instalación reprogramada exitosamente.");
         this.cerrarReprogramarModal();

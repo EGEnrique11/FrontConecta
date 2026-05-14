@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { InstalacionPendienteDTO } from '../models/despacho/despacho.model';
 
 @Injectable({
   providedIn: 'root'
@@ -9,8 +10,8 @@ export class DespachoHttpService {
   private http = inject(HttpClient);
   private readonly baseUrl = 'http://localhost:8080/api/v1';
 
-  obtenerPendientes(fecha: string, franja: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/despacho/pendientes?fecha=${fecha}&franja=${franja}`);
+  obtenerPendientes(fecha: string, franja: string): Observable<InstalacionPendienteDTO[]> {
+    return this.http.get<InstalacionPendienteDTO[]>(`${this.baseUrl}/despacho/pendientes?fecha=${fecha}&franja=${franja}`);
   }
 
   asignarTecnico(instalacionId: number, dto: any): Observable<any> {
@@ -19,8 +20,8 @@ export class DespachoHttpService {
 
   // Se removió cambiarEstado ya que se reemplaza por completarInstalacion y cancelarInstalacion
 
-  obtenerAgendaTecnico(mes: number, anio: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/despacho/tecnico/agenda?mes=${mes}&anio=${anio}`);
+  obtenerAgendaTecnico(tecnicoId: number, fecha: string): Observable<InstalacionPendienteDTO[]> {
+    return this.http.get<InstalacionPendienteDTO[]>(`${this.baseUrl}/despacho/tecnico/agenda?tecnicoId=${tecnicoId}&fecha=${fecha}`);
   }
 
   obtenerListaTecnicos(): Observable<any[]> {
@@ -71,8 +72,8 @@ export class DespachoHttpService {
     return this.http.get<any>(url);
   }
 
-  obtenerAsignadas(fecha: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/despacho/asignadas?fecha=${fecha}`);
+  obtenerAsignadas(fecha: string): Observable<InstalacionPendienteDTO[]> {
+    return this.http.get<InstalacionPendienteDTO[]>(`${this.baseUrl}/despacho/asignadas?fecha=${fecha}`);
   }
 
   editarBloque(bloqueId: number, dto: any): Observable<any> {
@@ -96,7 +97,11 @@ export class DespachoHttpService {
     return this.http.put<any>(`${this.baseUrl}/instalaciones/${instalacionId}/completar`, dto || {});
   }
 
-  buscarInstalaciones(criterio: string, valor: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/despacho/buscar?criterio=${criterio}&valor=${valor}`);
+  iniciarInstalacion(instalacionId: number): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/instalaciones/${instalacionId}/iniciar`, {});
+  }
+
+  buscarInstalaciones(criterio: string, valor: string): Observable<InstalacionPendienteDTO[]> {
+    return this.http.get<InstalacionPendienteDTO[]>(`${this.baseUrl}/despacho/buscar?criterio=${criterio}&valor=${valor}`);
   }
 }

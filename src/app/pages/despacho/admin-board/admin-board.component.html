@@ -25,20 +25,24 @@
       <input type="date" [ngModel]="fechaSelect()" (ngModelChange)="setFechaSelect($event); onFilterChange()"
         class="border border-gray-300 rounded p-2 text-gray-700 bg-white focus:ring-[#008d92] focus:border-[#008d92]">
     </div>
-    <div class="flex flex-1 max-w-xl w-full relative gap-2">
+    <div class="flex flex-1 max-w-xl w-full relative items-center gap-3">
       <select [ngModel]="criterioBusqueda()" (ngModelChange)="criterioBusqueda.set($event)"
-        class="border border-gray-300 rounded p-2 focus:ring-[#008d92] focus:border-[#008d92] bg-white">
+        class="bg-teal-50 border border-teal-300 text-teal-800 text-sm rounded-lg focus:ring-teal-500 focus:border-teal-500 block p-2.5 shadow-sm transition-colors cursor-pointer font-medium">
         <option value="DOCUMENTO">Documento (DNI/CE)</option>
         <option value="NOMBRE">Nombre/Apellido</option>
         <option value="CELULAR">Celular</option>
       </select>
-      <div class="flex flex-1 relative">
+      <div class="flex flex-1 relative gap-2 items-center">
         <input type="text" [ngModel]="globalSearchTerm()" (ngModelChange)="globalSearchTerm.set($event)"
           (keyup.enter)="buscarInstalacionesGlobal()" placeholder="Buscar instalación..."
-          class="w-full border border-gray-300 rounded-l p-2 focus:ring-[#008d92] focus:border-[#008d92]">
+          class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-[#008d92] focus:border-[#008d92]">
         <button (click)="buscarInstalacionesGlobal()"
-          class="bg-[#008d92] hover:bg-[#0a6067] text-white px-4 py-2 rounded-r transition-colors"><i
-            class="fas fa-search"></i></button>
+          class="flex items-center gap-2 text-white bg-teal-600 hover:bg-teal-700 focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-sm px-5 py-2.5 shadow-md transition-colors whitespace-nowrap cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          Buscar
+        </button>
       </div>
     </div>
   </div>
@@ -52,30 +56,54 @@
       }
       <div class="space-y-4">
         @for (inst of state.instalacionesPendientes(); track inst.id) {
-        @if (inst.estado === 'PENDIENTE') {
+        @if (inst.estado === 'PENDIENTE' || inst.estado === 'REPROGRAMADA') {
         <div
-          class="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer relative overflow-hidden group"
+          class="border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer relative overflow-hidden group"
+          [ngClass]="{'border-amber-400 bg-amber-50/30': inst.estado === 'REPROGRAMADA', 'border-gray-200': inst.estado !== 'REPROGRAMADA'}"
           (click)="selectInstalacion(inst)">
-          <div class="absolute top-0 left-0 w-1 h-full bg-yellow-400 group-hover:bg-[#008d92] transition-colors"></div>
+          <div class="absolute top-0 left-0 w-1 h-full transition-colors"
+            [ngClass]="{'bg-amber-400 group-hover:bg-amber-500': inst.estado === 'REPROGRAMADA', 'bg-yellow-400 group-hover:bg-[#008d92]': inst.estado === 'PENDIENTE'}">
+          </div>
           <div class="flex justify-between items-start pl-2">
             <div>
-              <h3 class="font-bold text-gray-800">{{ inst.nombreCliente }}</h3>
+              <div class="flex items-center gap-2">
+                <h3 class="font-bold text-gray-800">{{ inst.nombreCliente }}</h3>
+                @if (inst.estado === 'REPROGRAMADA') {
+                <span
+                  class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">Reprogramada</span>
+                }
+              </div>
               <p class="text-sm text-gray-600 mt-1"><i class="fas fa-map-marker-alt text-[#008d92] mr-2"></i>{{
                 inst.direccionCompleta }}</p>
+              @if (inst.detallePedido) {
+              <p class="text-sm text-gray-700 mt-1 italic font-medium"><i class="fas fa-box text-[#008d92] mr-2"></i>Plan: {{ inst.detallePedido }}</p>
+              }
+              @if (inst.nombrePromocion && inst.nombrePromocion !== 'Sin promoción especial') {
+              <span class="inline-flex items-center gap-1 mt-2 bg-blue-50 text-blue-700 text-xs font-semibold px-2 py-1 rounded border border-blue-200">
+                <i class="fas fa-gift"></i> {{ inst.nombrePromocion }}
+              </span>
+              }
               <p class="text-xs text-gray-500 mt-2">ID Contrato: #{{ inst.contratoId }} | Franja/Turno: {{
                 inst.franjaHoraria }}</p>
             </div>
             <div class="flex flex-col items-end gap-2">
-              <span
-                class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-yellow-200">
+              <span class="text-xs font-semibold px-2.5 py-0.5 rounded border"
+                [ngClass]="{'bg-amber-100 text-amber-800 border-amber-200': inst.estado === 'REPROGRAMADA', 'bg-yellow-100 text-yellow-800 border-yellow-200': inst.estado === 'PENDIENTE'}">
                 {{ inst.estado }}
               </span>
-              <div class="flex gap-2">
-                <button (click)="$event.stopPropagation(); onCancelarInstalacion(inst.id)"
-                  class="text-xs px-2 py-1 bg-red-50 hover:bg-red-100 text-red-700 rounded border border-red-200"><i
-                    class="fas fa-trash-alt"></i> Cancelar</button>
+              <div class="flex flex-wrap justify-end gap-2 mt-1">
+                @if (inst.celularCliente) {
+                <a [href]="'https://wa.me/51' + inst.celularCliente" target="_blank" (click)="$event.stopPropagation()"
+                  class="text-xs px-2 py-1 bg-green-50 hover:bg-green-100 text-green-700 rounded border border-green-200 flex items-center transition-colors"
+                  title="Contactar por WhatsApp">
+                  <i class="fab fa-whatsapp mr-1"></i> Contactar
+                </a>
+                }
                 <button (click)="$event.stopPropagation(); abrirReprogramarModal(inst)"
-                  class="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300">Reprogramar</button>
+                  class="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors">Reprogramar</button>
+                <button (click)="$event.stopPropagation(); onCancelarInstalacion(inst.id)"
+                  class="text-xs px-2 py-1 bg-red-50 hover:bg-red-100 text-red-700 rounded border border-red-200 transition-colors"><i
+                    class="fas fa-trash-alt"></i> Cancelar</button>
               </div>
             </div>
           </div>
@@ -91,7 +119,7 @@
 
       @if (selectedInstalacion()) {
       <div class="mb-6 p-4 bg-[#f0f9fa] border border-[#b2e2e4] rounded-lg">
-        <h3 class="font-semibold text-gray-800 mb-2">Asignar Técnico a {{ selectedInstalacion().nombreCliente }}</h3>
+        <h3 class="font-semibold text-gray-800 mb-2">Asignar Técnico a {{ selectedInstalacion()?.nombreCliente }}</h3>
         <form [formGroup]="assignForm" (ngSubmit)="asignarRuta()" class="flex flex-col gap-3">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Técnico</label>
@@ -137,6 +165,14 @@
             <div>
               <h3 class="font-bold text-gray-800">{{ inst.nombreCliente }}</h3>
               <p class="text-sm text-gray-600 mt-1">{{ inst.direccionCompleta }}</p>
+              @if (inst.detallePedido) {
+              <p class="text-sm text-gray-700 mt-1 italic font-medium"><i class="fas fa-box text-[#008d92] mr-2"></i>Plan: {{ inst.detallePedido }}</p>
+              }
+              @if (inst.nombrePromocion && inst.nombrePromocion !== 'Sin promoción especial') {
+              <span class="inline-flex items-center gap-1 mt-2 mb-1 bg-blue-50 text-blue-700 text-xs font-semibold px-2 py-1 rounded border border-blue-200">
+                <i class="fas fa-gift"></i> {{ inst.nombrePromocion }}
+              </span>
+              }
               <p class="text-xs text-gray-500 mt-1">Franja: {{ inst.franjaHoraria }} | Téc: {{ inst.tecnicoNombre }}</p>
             </div>
             <span class="text-xs font-semibold px-2.5 py-0.5 rounded border" [ngClass]="{
@@ -200,7 +236,7 @@
         <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
         <div class="pl-2">
           <h3 class="font-bold text-gray-800 text-lg mb-1">{{ turno.nombre }}</h3>
-          
+
           <p class="text-sm text-gray-600 mb-3"><i class="far fa-clock text-indigo-500 mr-2"></i>{{ turno.horaInicio }}
             - {{ turno.horaFin }}</p>
           <button (click)="gestionarBloques(turno)"
@@ -217,8 +253,14 @@
   <div class="mt-8 bg-white rounded-lg shadow-md p-6 border-t-4 border-indigo-300">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-semibold text-gray-700">Bloques del {{ selectedTurnoForManager().nombre }}</h2>
-      <button (click)="selectedTurnoForManager.set(null)" class="text-gray-500 hover:text-red-500"><i
-          class="fas fa-times"></i> Cerrar</button>
+      <button (click)="selectedTurnoForManager.set(null)"
+        class="flex items-center gap-1 text-gray-500 hover:text-red-500 font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+          class="w-4 h-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        Cerrar
+      </button>
     </div>
 
     <form [formGroup]="bloqueForm" (ngSubmit)="agregarBloque()"
@@ -248,23 +290,27 @@
       <p class="text-gray-500 text-sm text-center py-2 w-full">No hay bloques registrados para este turno.</p>
       }
       @for (b of turnoBloques(); track b.id) {
-      <div class="group inline-flex items-center rounded-full border border-teal-200 bg-teal-50 shadow-sm overflow-hidden transition-all hover:shadow-md">
-        <button (click)="onEditarBloque(b)" 
-                class="flex items-center px-3 py-1.5 text-sm font-medium text-teal-700 hover:bg-teal-100 transition-colors cursor-pointer" 
-                title="Editar horario">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5 opacity-70">
+      <div
+        class="group inline-flex items-center rounded-full border border-teal-200 bg-teal-50 shadow-sm overflow-hidden transition-all hover:shadow-md">
+        <button (click)="onEditarBloque(b)"
+          class="flex items-center px-3 py-1.5 text-sm font-medium text-teal-700 hover:bg-teal-100 transition-colors cursor-pointer"
+          title="Editar horario">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+            stroke="currentColor" class="w-4 h-4 mr-1.5 opacity-70">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           {{ b.horaInicio | slice:0:5 }} - {{ b.horaFin | slice:0:5 }}
           @if (b.esRefrigerio) {
-            <span class="ml-1 text-[10px] font-bold text-amber-600 uppercase tracking-wide">(Ref)</span>
+          <span class="ml-1 text-[10px] font-bold text-amber-600 uppercase tracking-wide">(Ref)</span>
           }
         </button>
-        <button (click)="onEliminarBloque(b.id)" 
-                class="flex items-center justify-center px-3 py-1.5 border-l border-teal-200 bg-teal-50/50 text-gray-400 group-hover:text-gray-500 hover:!bg-red-50 hover:!text-red-600 transition-all cursor-pointer" 
-                title="Eliminar bloque">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 transition-transform hover:scale-110">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+        <button (click)="onEliminarBloque(b.id)"
+          class="flex items-center justify-center px-3 py-1.5 border-l border-teal-200 bg-teal-50/50 text-gray-400 group-hover:text-gray-500 hover:!bg-red-50 hover:!text-red-600 transition-all cursor-pointer"
+          title="Eliminar bloque">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+            stroke="currentColor" class="w-4 h-4 transition-transform hover:scale-110">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
           </svg>
         </button>
       </div>
@@ -338,12 +384,18 @@
 
 <!-- MODAL BÚSQUEDA GLOBAL -->
 @if (searchModalVisible()) {
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
   <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
     <div class="flex justify-between items-center p-4 border-b border-gray-200">
       <h2 class="text-xl font-bold text-gray-800">Resultados de Búsqueda</h2>
-      <button (click)="cerrarSearchModal()" class="text-gray-500 hover:text-red-500"><i
-          class="fas fa-times text-xl"></i></button>
+      <button (click)="cerrarSearchModal()"
+        class="p-2 text-gray-400 rounded-full hover:text-gray-700 hover:bg-gray-100 transition-all duration-200 focus:outline-none"
+        title="Cerrar">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
     <div class="p-4 overflow-y-auto flex-1 bg-gray-50">
       @if (searchResults().length === 0) {
@@ -391,16 +443,21 @@
 
 <!-- MODAL REPROGRAMACIÓN -->
 @if (reprogramarModalVisible() && instToReprogramar()) {
-<div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+<div class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
   <div class="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
     <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
       <h3 class="font-bold text-gray-800">Reprogramar Instalación</h3>
-      <button (click)="cerrarReprogramarModal()" class="text-gray-500 hover:text-red-500"><i
-          class="fas fa-times"></i></button>
+      <button (click)="cerrarReprogramarModal()"
+        class="text-gray-500 hover:text-red-500 p-1 hover:bg-red-50 rounded transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+          class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
     <div class="p-4">
       <p class="text-sm text-gray-600 mb-4">Vas a reprogramar la instalación de <strong>{{
-          instToReprogramar().nombreCliente }}</strong>. El técnico y bloque actuales se liberarán automáticamente.</p>
+          instToReprogramar()?.nombreCliente }}</strong>. El técnico y bloque actuales se liberarán automáticamente.</p>
       <form [formGroup]="reprogramarForm" (ngSubmit)="reprogramarInstalacionSubmit()" class="flex flex-col gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Nueva Fecha</label>
@@ -427,12 +484,17 @@
 
 <!-- MODAL EDICIÓN DE BLOQUE -->
 @if (editBloqueModalVisible() && bloqueToEdit()) {
-<div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+<div class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
   <div class="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
     <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
       <h3 class="font-bold text-gray-800">Editar Bloque Horario</h3>
-      <button (click)="cerrarEditBloqueModal()" class="text-gray-500 hover:text-red-500"><i
-          class="fas fa-times"></i></button>
+      <button (click)="cerrarEditBloqueModal()"
+        class="text-gray-500 hover:text-red-500 p-1 hover:bg-red-50 rounded transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+          class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
     <div class="p-4">
       <p class="text-sm text-gray-600 mb-4">Modifica los detalles del bloque horario para el <strong>{{
@@ -470,20 +532,82 @@
 
 <!-- MODAL CONFIRMACIÓN ELIMINAR BLOQUE -->
 @if (deleteBloqueModalVisible() && bloqueIdAEliminar()) {
-<div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4">
+<div class="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
   <div class="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden relative">
     <div class="p-6 text-center">
       <div class="w-16 h-16 rounded-full bg-red-100 mx-auto flex items-center justify-center mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-red-600">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-8 h-8 text-red-600">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
       </div>
       <h3 class="text-xl font-bold text-gray-900 mb-2">¿Eliminar bloque horario?</h3>
-      <p class="text-sm text-gray-500 mb-6">Esta acción no se puede deshacer. El bloque será eliminado permanentemente del turno.</p>
-      
+      <p class="text-sm text-gray-500 mb-6">Esta acción no se puede deshacer. El bloque será eliminado permanentemente
+        del turno.</p>
+
       <div class="flex justify-center gap-3">
-        <button (click)="cancelarEliminacion()" class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-colors w-full">Cancelar</button>
-        <button (click)="confirmarEliminacion()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors w-full">Sí, eliminar</button>
+        <button (click)="cancelarEliminacion()"
+          class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-colors w-full">Cancelar</button>
+        <button (click)="confirmarEliminacion()"
+          class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors w-full">Sí,
+          eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- MODAL CONFIRMACIÓN CANCELAR INSTALACIÓN -->
+@if (cancelarModalVisible() && instalacionIdACancelar()) {
+<div class="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden relative transform transition-all">
+    <div class="p-6 text-center">
+      <div class="w-16 h-16 rounded-full bg-red-100 mx-auto flex items-center justify-center mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-8 h-8 text-red-600">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">¿Cancelar Instalación?</h3>
+      <p class="text-sm text-gray-500 mb-6">Se liberará la agenda del técnico y se cancelará el proceso operativo. Esta
+        acción no se puede deshacer.</p>
+
+      <div class="flex justify-center gap-3">
+        <button (click)="cerrarModalCancelar()"
+          class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-colors w-full">Cerrar</button>
+        <button (click)="confirmarCancelar()"
+          class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors w-full">Sí,
+          cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- MODAL CONFIRMACIÓN COMPLETAR INSTALACIÓN -->
+@if (completarModalVisible() && instalacionIdACompletar()) {
+<div class="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden relative transform transition-all">
+    <div class="p-6 text-center">
+      <div class="w-16 h-16 rounded-full bg-emerald-100 mx-auto flex items-center justify-center mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-8 h-8 text-emerald-600">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">¿Marcar como Completada?</h3>
+      <p class="text-sm text-gray-500 mb-6">El servicio se marcará como instalado y el contrato del cliente se activará
+        automáticamente en el sistema.</p>
+
+      <div class="flex justify-center gap-3">
+        <button (click)="cerrarModalCompletar()"
+          class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-colors w-full">Cerrar</button>
+        <button (click)="confirmarCompletar()"
+          class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors w-full">Sí,
+          completar</button>
       </div>
     </div>
   </div>
