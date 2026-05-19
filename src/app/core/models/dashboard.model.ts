@@ -1,0 +1,42 @@
+export interface ResumenDashboard {
+    totalClientesActivos: number;
+    instalacionesPendientesHoy: number;
+    tasaMoraPorcentual: number;
+    ingresosMesActual: number;
+}
+
+export interface FinanzasDeudaIngreso {
+    deudasYMora: number;
+    ingresosRealizados: number;
+}
+
+export interface EfectividadMora {
+    tasaMoraGlobal: number;
+    tasaEfectividad: number;
+}
+
+export interface TasaInstalacion {
+    totalMes: number;
+    tasaExitoPorcentaje: number;
+    completadasMes: number;
+}
+
+export interface CrecimientoMensual {
+    cantidad: number;
+    anio: number;
+    mes: number;
+}
+
+export interface ProductividadTecnica {
+    tecnico: string;
+    completadas: number;
+    canceladas: number;
+    reprogramadas: number;
+}
+
+export interface RendimientoVendedor {
+    vendedor: string;
+    cantidad: number;
+}
+
+export type InstalacionesEstados = Record<string, number>;

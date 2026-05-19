@@ -1,0 +1,118 @@
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-4">
+  <!-- Cabecera de la Tarjeta -->
+  <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+      <i class="fas fa-user-circle text-[#008d92]"></i> Información General
+    </h3>
+    
+    @if (!isEditing()) {
+      <button (click)="toggleEdit()" 
+              class="text-sm font-medium text-[#008d92] hover:text-[#006f73] bg-teal-50 hover:bg-teal-100 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 border border-teal-100">
+        <i class="fas fa-pen"></i> Editar Contacto
+      </button>
+    } @else {
+      <div class="flex items-center gap-2">
+        <button (click)="cancelEdit()" [disabled]="isSaving()"
+                class="text-sm font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
+          Cancelar
+        </button>
+        <button (click)="guardarCambios()" [disabled]="isSaving()"
+                class="text-sm font-medium text-white bg-[#008d92] hover:bg-[#006f73] px-4 py-2 rounded-lg transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50">
+          @if (isSaving()) {
+            <i class="fas fa-circle-notch fa-spin"></i> Guardando...
+          } @else {
+            <i class="fas fa-save"></i> Guardar
+          }
+        </button>
+      </div>
+    }
+  </div>
+
+  <div class="p-6">
+    <!-- Bloque de Solo Lectura -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div>
+        <p class="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Código de Cliente</p>
+        <p class="text-sm font-bold text-gray-900 bg-gray-50 px-3 py-1.5 rounded inline-block border border-gray-100">
+          CLI-{{ clienteData().id | number:'3.0' }}
+        </p>
+      </div>
+
+      <div>
+        <p class="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Nombres</p>
+        <p class="text-base font-semibold text-gray-900">{{ clienteData().nombres }}</p>
+      </div>
+
+      <div>
+        <p class="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Apellidos</p>
+        <p class="text-base font-semibold text-gray-900">{{ clienteData().apellidoPaterno }} {{ clienteData().apellidoMaterno }}</p>
+      </div>
+
+      <div>
+        <p class="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Tipo de Documento</p>
+        <p class="text-base font-semibold text-gray-900">{{ clienteData().tipoDocumento }}</p>
+      </div>
+
+      <div>
+        <p class="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Número de Documento</p>
+        <p class="text-base font-semibold text-gray-900 tracking-wider">{{ clienteData().documento }}</p>
+      </div>
+
+      <div>
+        <p class="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Fecha de Registro</p>
+        <p class="text-base font-semibold text-gray-900">
+          {{ clienteData().createdAt ? (clienteData().createdAt | date:'mediumDate') : 'N/A' }}
+        </p>
+      </div>
+    </div>
+
+    <hr class="border-gray-100 my-6">
+
+    <!-- Bloque Editable de Contacto -->
+    <div class="mb-2">
+      <h4 class="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+        <i class="fas fa-address-book text-gray-400"></i> Datos de Contacto
+      </h4>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/50 p-5 rounded-xl border border-gray-100">
+        <!-- Correo Electrónico -->
+        <div>
+          <label class="block text-xs text-gray-500 uppercase tracking-wide font-medium mb-1.5" for="correoInput">
+            Correo Electrónico
+          </label>
+          @if (isEditing()) {
+            <input type="email" id="correoInput"
+                   [ngModel]="editCorreo()" (ngModelChange)="editCorreo.set($event)"
+                   class="w-full bg-white border border-teal-300 text-gray-900 text-sm rounded-lg focus:ring-[#008d92] focus:border-[#008d92] block p-2.5 transition-colors shadow-sm" 
+                   placeholder="ejemplo@correo.com" [disabled]="isSaving()">
+          } @else {
+            <div class="flex items-center gap-2 text-base font-semibold text-gray-900">
+              <i class="fas fa-envelope text-gray-400 w-4"></i>
+              <a *ngIf="clienteData().correo; else noCorreo" href="mailto:{{ clienteData().correo }}" class="hover:text-[#008d92] hover:underline transition-colors">{{ clienteData().correo }}</a>
+              <ng-template #noCorreo><span class="text-gray-400 italic font-normal">No registrado</span></ng-template>
+            </div>
+          }
+        </div>
+
+        <!-- Celular -->
+        <div>
+          <label class="block text-xs text-gray-500 uppercase tracking-wide font-medium mb-1.5" for="celularInput">
+            Celular
+          </label>
+          @if (isEditing()) {
+            <input type="tel" id="celularInput"
+                   [ngModel]="editCelular()" (ngModelChange)="editCelular.set($event)"
+                   class="w-full bg-white border border-teal-300 text-gray-900 text-sm rounded-lg focus:ring-[#008d92] focus:border-[#008d92] block p-2.5 transition-colors shadow-sm" 
+                   placeholder="Ej: 999888777" [disabled]="isSaving()">
+          } @else {
+            <div class="flex items-center gap-2 text-base font-semibold text-gray-900">
+              <i class="fas fa-phone-alt text-gray-400 w-4"></i>
+              <a *ngIf="clienteData().celular; else noCelular" href="tel:{{ clienteData().celular }}" class="hover:text-[#008d92] hover:underline transition-colors">{{ clienteData().celular }}</a>
+              <ng-template #noCelular><span class="text-gray-400 italic font-normal">No registrado</span></ng-template>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

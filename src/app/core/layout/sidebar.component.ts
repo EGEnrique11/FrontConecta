@@ -56,10 +56,9 @@ export class SidebarComponent {
     { path: '/dashboard', icon: 'dashboard', label: 'Dashboard', roles: ['ROLE_ADMIN', 'ROLE_DEVELOPER']},
     { path: '/venta/registro', icon: 'shopping_cart', label: 'Ventas', roles: ['ROLE_ADMIN', 'ROLE_DEVELOPER', 'ROLE_VENDEDOR']},
     { path: '/despacho', icon: 'local_shipping', label: 'Despacho', roles: ['ROLE_ADMIN', 'ROLE_DEVELOPER', 'ROLE_TECNICO']},
-    { path: '/facturacion', icon: 'receipt', label: 'Facturación', roles: ['ROLE_ADMIN', 'ROLE_DEVELOPER']},
-    { path: '/cliente', icon: 'people', label: 'Clientes', roles: ['ROLE_ADMIN', 'ROLE_DEVELOPER', 'ROLE_VENDEDOR']},
-    { path: '/empleados', icon: 'manage_accounts', label: 'Empleados', roles: ['ROLE_ADMIN', 'ROLE_DEVELOPER']},
-    { path: '/control', icon: 'admin_panel_settings', label: 'Panel Activos', roles: ['ROLE_ADMIN', 'ROLE_DEVELOPER']}
+    { path: '/pago', icon: 'receipt', label: 'Pago', roles: ['ROLE_ADMIN', 'ROLE_DEVELOPER']},
+    { path: '/clientes', icon: 'people', label: 'Clientes', roles: ['ROLE_ADMIN', 'ROLE_DEVELOPER', 'ROLE_VENDEDOR']},
+    { path: '/empleados', icon: 'manage_accounts', label: 'Empleados', roles: ['ROLE_ADMIN', 'ROLE_DEVELOPER']}
   ];
 
   items = computed(()=> {

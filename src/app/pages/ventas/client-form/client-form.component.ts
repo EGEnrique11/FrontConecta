@@ -6,12 +6,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, filter, switchMap, tap, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { of } from 'rxjs';
 
-import { TipoDocumento, TipoUrbanizacion, TipoVia, TipoVivienda } from '../../../core/models/venta/tipo-enums.model';
+import { TipoDocumento, TipoUrbanizacion, TipoVia, TipoVivienda } from '../../../core/models/shared/tipo-enums.model';
 import { Ubicacion } from '../../../core/models/ubicaciones.model';
 import { UbicacionService } from '../../../core/infrastructure/ubicacion.service';
 import { VentasHttpService } from '../../../core/infrastructure/ventas-http.service';
 import { VentaStateService } from '../../../features/ventas/services/venta-state.service';
-import { ClienteDto } from '../../../core/models/venta/cliente.model';
 import { GoogleMap, MapMarker } from '@angular/google-maps';
 
 @Component({
@@ -118,6 +117,31 @@ export default class ClientFormComponent implements OnInit {
 
     this.setupConditionalValidators();
     this.setupDniSearch();
+    this.checkPreCargado();
+  }
+
+  private checkPreCargado(): void {
+    const precargado = this.ventaStateService.clientePreCargado();
+    if (precargado) {
+      this.form.patchValue({
+        clienteId: precargado.id,
+        tipoDocumento: precargado.tipoDocumento,
+        documento: precargado.documento,
+        nombres: precargado.nombres,
+        apellidoPaterno: precargado.apellidoPaterno,
+        apellidoMaterno: precargado.apellidoMaterno,
+        correo: precargado.correo,
+        celular: precargado.celular,
+        fechaNacimiento: precargado.fechaNacimiento
+      }, { emitEvent: false });
+
+      this.form.get('documento')?.disable();
+      this.form.get('tipoDocumento')?.disable();
+      this.form.get('nombres')?.disable();
+      this.form.get('apellidoPaterno')?.disable();
+      this.form.get('apellidoMaterno')?.disable();
+      this.form.get('fechaNacimiento')?.disable();
+    }
   }
 
   private setupDniSearch(): void {
@@ -259,8 +283,6 @@ export default class ClientFormComponent implements OnInit {
       this.form.markAllAsTouched();
       return;
     }
-
-    // getRawValue gets disabled fields as well
     const value = this.form.getRawValue();
     const dir = value.direccion;
     

@@ -1,17 +1,23 @@
 import { Injectable, signal } from '@angular/core';
-import { ClienteDto } from '../../../core/models/venta/cliente.model';
+import { ClienteRegistrationDTO, ClienteDto } from '../../../core/models/shared/cliente.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VentaStateService {
-  readonly clienteData = signal<ClienteDto | null>(null);
+  readonly clienteData = signal<ClienteRegistrationDTO | null>(null);
+  readonly clientePreCargado = signal<ClienteDto | null>(null);
 
-  setClienteData(cliente: ClienteDto): void {
+  setClienteData(cliente: ClienteRegistrationDTO): void {
     this.clienteData.set(cliente);
+  }
+
+  setClientePreCargado(cliente: ClienteDto): void {
+    this.clientePreCargado.set(cliente);
   }
 
   clearState(): void {
     this.clienteData.set(null);
+    this.clientePreCargado.set(null);
   }
 }

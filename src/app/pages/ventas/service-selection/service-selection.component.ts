@@ -8,7 +8,7 @@ import { of } from 'rxjs';
 
 import { VentaStateService } from '../../../features/ventas/services/venta-state.service';
 import { VentasHttpService } from '../../../core/infrastructure/ventas-http.service';
-import { TipoEfectoPromocion } from '../../../core/models/venta/tipo-enums.model';
+import { TipoEfectoPromocion } from '../../../core/models/shared/tipo-enums.model';
 
 @Component({
   selector: 'app-service-selection',
@@ -210,7 +210,7 @@ export default class ServiceSelectionComponent implements OnInit {
         this.isLoading.set(false);
         this.ventaStateService.clearState();
         alert('Venta Completada. Se ha registrado el cliente y el contrato exitosamente.');
-        this.router.navigate(['/control']);
+        this.router.navigate(['/menu']);
       },
       error: (err) => {
         this.isLoading.set(false);

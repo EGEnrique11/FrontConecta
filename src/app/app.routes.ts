@@ -18,6 +18,12 @@ export const routes: Routes = [
         loadComponent: () => import('./core/layout/main-layout.component'),
         children: [
             {
+                path: 'dashboard',
+                canMatch: [roleGuard],
+                data: {roles: ['ROLE_ADMIN', 'ROLE_DEVELOPER']},
+                loadComponent: () => import('./pages/dashboard/dashboard.component')
+            },
+            {
                 path: 'menu',
                 loadComponent: () => import('./pages/menu/menu.component')
             },
@@ -36,14 +42,20 @@ export const routes: Routes = [
                 loadComponent: () => import('./pages/control/control.component')
             },
             {
-                path: 'cliente',
-                loadComponent: () => import('./pages/clientes/client-list/client-list.component')
+                path: 'clientes',
+                loadChildren: () => import('./pages/clientes/clientes.routes').then(m => m.CLIENTE_ROUTES)
             },
             {
                 path: 'empleados',
                 canMatch: [roleGuard],
                 data: {roles: ['ROLE_ADMIN', 'ROLE_DEVELOPER']},
                 loadComponent: () => import('./pages/empleados/empleado-list/empleado-list.component')
+            },
+            {
+                path: 'pago',
+                canMatch: [roleGuard],
+                data: {roles: ['ROLE_ADMIN']},
+                loadComponent: () => import('./pages/pagos/registro-pago/registro-pago.component')
             },
             {
                 path: 'despacho',

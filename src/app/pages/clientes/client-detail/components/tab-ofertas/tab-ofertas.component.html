@@ -1,0 +1,122 @@
+<div class="mt-4">
+  
+  @if (isLoadingDeuda()) {
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 animate-pulse">
+      <div class="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+      <div class="h-10 bg-gray-200 rounded w-full"></div>
+    </div>
+  } @else {
+    
+    <!-- Alerta Bloqueante de Deuda -->
+    @if (deudaStatus().tieneDeuda) {
+      <div class="bg-red-50 border-l-4 border-red-500 rounded-r-xl p-5 mb-6 shadow-sm flex items-start gap-4">
+        <i class="fas fa-exclamation-triangle text-red-500 text-2xl mt-0.5"></i>
+        <div>
+          <h4 class="text-red-800 font-bold text-lg">Operación Restringida</h4>
+          <p class="text-red-700 mt-1">{{ deudaStatus().mensaje || 'El cliente presenta una deuda activa. No es posible generar nuevas ventas ni renovaciones hasta que se regularice su estado de cuenta.' }}</p>
+          <button class="mt-3 bg-red-100 hover:bg-red-200 text-red-800 text-sm font-semibold py-2 px-4 rounded transition-colors" disabled>
+            <i class="fas fa-lock mr-2"></i> Nueva Venta Bloqueada
+          </button>
+        </div>
+      </div>
+    } @else {
+      <!-- Alerta de Venta Habilitada -->
+      <div class="bg-green-50 border border-green-100 rounded-xl p-5 mb-6 shadow-sm flex items-start gap-4">
+        <i class="fas fa-check-circle text-green-500 text-2xl mt-0.5"></i>
+        <div class="flex-1">
+          <h4 class="text-green-800 font-bold text-lg">Aprobado para Nueva Venta</h4>
+          <p class="text-green-700 mt-1">El cliente no presenta deudas y está calificado para adquirir nuevos servicios o renovaciones de contratos existentes.</p>
+        </div>
+        <button (click)="generarVenta()"
+                class="bg-[#008d92] hover:bg-[#006f73] text-white text-sm font-semibold py-2.5 px-5 rounded-lg shadow-sm transition-all hover:shadow flex items-center gap-2 mt-1">
+          <i class="fas fa-shopping-cart"></i> Generar Venta
+        </button>
+      </div>
+    }
+
+    <!-- Catálogo de Ofertas Destacadas (UI Decorativa) -->
+    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+      <i class="fas fa-fire text-orange-500"></i> Ofertas Recomendadas
+    </h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      
+      <!-- Card 1 -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative group" [class.opacity-60]="deudaStatus().tieneDeuda">
+        <div class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-3 py-1 uppercase rounded-bl-lg">
+          Más Popular
+        </div>
+        <div class="p-5 border-b border-gray-100 bg-gray-50/50">
+          <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">FIBRA ÓPTICA</p>
+          <h4 class="text-xl font-black text-gray-800">Internet 600 Mbps</h4>
+        </div>
+        <div class="p-5">
+          <div class="flex items-baseline gap-1 mb-4">
+            <span class="text-3xl font-black text-[#008d92]">S/ 89.90</span>
+            <span class="text-xs text-gray-500 font-medium">/mes</span>
+          </div>
+          <ul class="text-sm text-gray-600 space-y-2 mb-6">
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Simetría 100%</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Router WiFi 6 Incluido</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Instalación Gratuita</li>
+          </ul>
+          <button (click)="generarVenta()" [disabled]="deudaStatus().tieneDeuda"
+                  class="w-full py-2.5 rounded-lg font-bold text-sm transition-colors border"
+                  [ngClass]="deudaStatus().tieneDeuda ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : 'bg-white border-[#008d92] text-[#008d92] hover:bg-teal-50'">
+            Contratar Plan
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative group" [class.opacity-60]="deudaStatus().tieneDeuda">
+        <div class="p-5 border-b border-gray-100 bg-gray-50/50">
+          <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">TRÍO</p>
+          <h4 class="text-xl font-black text-gray-800">TV + Int 400 + Fijo</h4>
+        </div>
+        <div class="p-5">
+          <div class="flex items-baseline gap-1 mb-4">
+            <span class="text-3xl font-black text-[#008d92]">S/ 129.90</span>
+            <span class="text-xs text-gray-500 font-medium">/mes</span>
+          </div>
+          <ul class="text-sm text-gray-600 space-y-2 mb-6">
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> 120 Canales (80 HD)</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Llamadas Ilimitadas</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> 2 Decodificadores</li>
+          </ul>
+          <button (click)="generarVenta()" [disabled]="deudaStatus().tieneDeuda"
+                  class="w-full py-2.5 rounded-lg font-bold text-sm transition-colors border"
+                  [ngClass]="deudaStatus().tieneDeuda ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : 'bg-white border-[#008d92] text-[#008d92] hover:bg-teal-50'">
+            Contratar Plan
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative group" [class.opacity-60]="deudaStatus().tieneDeuda">
+        <div class="p-5 border-b border-gray-100 bg-gray-50/50">
+          <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">RENOVACIÓN</p>
+          <h4 class="text-xl font-black text-gray-800">Upgrade de Velocidad</h4>
+        </div>
+        <div class="p-5">
+          <div class="flex items-baseline gap-1 mb-4">
+            <span class="text-xl text-gray-400 line-through mr-1">S/ 40</span>
+            <span class="text-3xl font-black text-[#008d92]">S/ 20</span>
+            <span class="text-xs text-gray-500 font-medium">/mes addicional</span>
+          </div>
+          <ul class="text-sm text-gray-600 space-y-2 mb-6">
+            <li class="flex items-center gap-2"><i class="fas fa-arrow-up text-blue-500"></i> Duplica tu velocidad</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Aplica a plan actual</li>
+            <li class="flex items-center gap-2"><i class="fas fa-clock text-gray-400"></i> Activo en 24hs</li>
+          </ul>
+          <button (click)="generarVenta()" [disabled]="deudaStatus().tieneDeuda"
+                  class="w-full py-2.5 rounded-lg font-bold text-sm transition-colors border"
+                  [ngClass]="deudaStatus().tieneDeuda ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : 'bg-[#008d92] border-[#008d92] text-white hover:bg-[#006f73]'">
+            Renovar Ahora
+          </button>
+        </div>
+      </div>
+
+    </div>
+  }
+</div>

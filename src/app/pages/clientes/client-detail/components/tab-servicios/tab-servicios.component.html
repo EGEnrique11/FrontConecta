@@ -1,0 +1,85 @@
+<div class="mt-4">
+  <!-- Estado de Carga -->
+  @if (isLoading()) {
+    <div class="flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-sm border border-gray-200">
+      <i class="fas fa-circle-notch fa-spin text-4xl text-[#008d92] mb-4"></i>
+      <p class="text-gray-500 font-medium">Cargando servicios contratados...</p>
+    </div>
+  } @else {
+    <!-- Empty State -->
+    @if (contratos().length === 0) {
+      <div class="flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-sm border border-gray-200 text-center px-4">
+        <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+          <i class="fas fa-box-open text-3xl text-gray-400"></i>
+        </div>
+        <h3 class="text-lg font-bold text-gray-800 mb-2">Sin Servicios Activos</h3>
+        <p class="text-gray-500 max-w-md">El cliente no cuenta con servicios activos o historial de contratos en este momento.</p>
+      </div>
+    } @else {
+      <!-- Grid de Contratos -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        @for (contrato of contratos(); track contrato.id) {
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+            <!-- Header Tarjeta -->
+            <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
+              <div>
+                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">CONTRATO #{{ contrato.id | number:'3.0' }}</p>
+                <h4 class="text-lg font-bold text-[#008d92]">{{ contrato.planNombre }}</h4>
+              </div>
+              <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border"
+                    [ngClass]="{
+                      'bg-green-50 text-green-700 border-green-200': contrato.estado === 'ACTIVO',
+                      'bg-yellow-50 text-yellow-700 border-yellow-200': contrato.estado === 'SUSPENDIDO',
+                      'bg-red-50 text-red-700 border-red-200': contrato.estado === 'BAJA',
+                      'bg-gray-100 text-gray-600 border-gray-200': contrato.estado === 'INACTIVO' || contrato.estado === 'PENDIENTE'
+                    }">
+                {{ contrato.estado }}
+              </span>
+            </div>
+            
+            <!-- Cuerpo Tarjeta -->
+            <div class="p-5">
+              <div class="grid grid-cols-2 gap-y-4 gap-x-2">
+                <div>
+                  <p class="text-xs text-gray-500 uppercase font-medium flex items-center gap-1.5 mb-1">
+                    <i class="fas fa-tachometer-alt text-gray-400"></i> Velocidad
+                  </p>
+                  <p class="text-sm font-semibold text-gray-900">{{ contrato.planVelocidad }} Mbps</p>
+                </div>
+                
+                <div>
+                  <p class="text-xs text-gray-500 uppercase font-medium flex items-center gap-1.5 mb-1">
+                    <i class="fas fa-money-bill-wave text-gray-400"></i> Tarifa
+                  </p>
+                  <p class="text-sm font-semibold text-gray-900">{{ contrato.tarifaMensual | currency:'S/':'symbol' }}</p>
+                </div>
+                
+                <div>
+                  <p class="text-xs text-gray-500 uppercase font-medium flex items-center gap-1.5 mb-1">
+                    <i class="far fa-calendar-alt text-gray-400"></i> F. Alta
+                  </p>
+                  <p class="text-sm font-semibold text-gray-900">{{ contrato.fechaAlta | date:'dd/MM/yyyy' }}</p>
+                </div>
+                
+                <div>
+                  <p class="text-xs text-gray-500 uppercase font-medium flex items-center gap-1.5 mb-1">
+                    <i class="fas fa-calendar-day text-gray-400"></i> Facturación
+                  </p>
+                  <p class="text-sm font-semibold text-gray-900">Día {{ contrato.diaCierre }} de cada mes</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Footer Tarjeta -->
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center gap-2">
+              <div class="w-6 h-6 rounded-full bg-[#008d92] text-white flex items-center justify-center text-xs font-bold">
+                {{ contrato.vendedorNombres.charAt(0) }}
+              </div>
+              <p class="text-xs text-gray-600"><span class="font-medium text-gray-800">Asesor:</span> {{ contrato.vendedorNombres }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
