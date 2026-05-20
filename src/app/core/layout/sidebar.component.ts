@@ -17,15 +17,16 @@ interface MenuItem {
   imports: [MatListModule, MatIconModule, RouterLink, RouterLinkActive],
   template: `
     <div class="flex flex-col h-full bg-[#008d92] text-white">
-      <h2 class="text-xl font-bold px-4 py-4 mb-2 flex items-center gap-2 border-b border-white/20 overflow-hidden whitespace-nowrap"
+      <div class="h-[72px] px-4 py-3 mb-2 flex items-center border-b border-white/20 overflow-hidden whitespace-nowrap transition-all duration-300"
           [class.justify-center]="collapsed()">
         @if (collapsed()) {
-          <span class="text-2xl leading-none">❄</span>
+          
+          <img src="assets/conectalogo.jpeg" alt="Logo" class="w-8 h-8 rounded object-cover object-left flex-shrink-0 bg-white" />
         } @else {
-          <span class="text-2xl leading-none text-[#0a6067]">❄</span>
-          <span>Conecta SAC</span>
+          
+          <img src="assets/conectalogo.jpeg" alt="Conecta SAC Logo" class="h-10 w-auto object-contain bg-white rounded p-1" />
         }
-      </h2>
+      </div>
       
       <ul class="p-2 flex flex-col w-full gap-2">
         @for(item of items(); track item.label){
