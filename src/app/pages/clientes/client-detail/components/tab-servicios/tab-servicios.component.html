@@ -2,7 +2,9 @@
   <!-- Estado de Carga -->
   @if (isLoading()) {
     <div class="flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-sm border border-gray-200">
-      <i class="fas fa-circle-notch fa-spin text-4xl text-[#008d92] mb-4"></i>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-[#008d92] animate-spin mb-4">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+      </svg>
       <p class="text-gray-500 font-medium">Cargando servicios contratados...</p>
     </div>
   } @else {
@@ -10,7 +12,9 @@
     @if (contratos().length === 0) {
       <div class="flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-sm border border-gray-200 text-center px-4">
         <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-          <i class="fas fa-box-open text-3xl text-gray-400"></i>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-gray-400">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+          </svg>
         </div>
         <h3 class="text-lg font-bold text-gray-800 mb-2">Sin Servicios Activos</h3>
         <p class="text-gray-500 max-w-md">El cliente no cuenta con servicios activos o historial de contratos en este momento.</p>
@@ -42,28 +46,36 @@
               <div class="grid grid-cols-2 gap-y-4 gap-x-2">
                 <div>
                   <p class="text-xs text-gray-500 uppercase font-medium flex items-center gap-1.5 mb-1">
-                    <i class="fas fa-tachometer-alt text-gray-400"></i> Velocidad
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gray-400">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                    </svg> Velocidad
                   </p>
                   <p class="text-sm font-semibold text-gray-900">{{ contrato.planVelocidad }} Mbps</p>
                 </div>
                 
                 <div>
                   <p class="text-xs text-gray-500 uppercase font-medium flex items-center gap-1.5 mb-1">
-                    <i class="fas fa-money-bill-wave text-gray-400"></i> Tarifa
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gray-400">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg> Tarifa
                   </p>
                   <p class="text-sm font-semibold text-gray-900">{{ contrato.tarifaMensual | currency:'S/':'symbol' }}</p>
                 </div>
                 
                 <div>
                   <p class="text-xs text-gray-500 uppercase font-medium flex items-center gap-1.5 mb-1">
-                    <i class="far fa-calendar-alt text-gray-400"></i> F. Alta
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gray-400">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                    </svg> F. Alta
                   </p>
                   <p class="text-sm font-semibold text-gray-900">{{ contrato.fechaAlta | date:'dd/MM/yyyy' }}</p>
                 </div>
                 
                 <div>
                   <p class="text-xs text-gray-500 uppercase font-medium flex items-center gap-1.5 mb-1">
-                    <i class="fas fa-calendar-day text-gray-400"></i> Facturación
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gray-400">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                    </svg> Facturación
                   </p>
                   <p class="text-sm font-semibold text-gray-900">Día {{ contrato.diaCierre }} de cada mes</p>
                 </div>

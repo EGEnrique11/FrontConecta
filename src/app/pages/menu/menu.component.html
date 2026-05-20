@@ -1,10 +1,73 @@
-<div class="flex items-center justify-center min-h-screen bg-[#f6f4f0]">
-  <form class="bg-gradient-to-br from-[#64b0a8] to-[#008d92] shadow-2xl rounded-2xl p-10 max-w-2xl w-full flex flex-col items-center">
-    <h2 class="text-3xl font-bold text-white mb-8">Estamos trabajando</h2>
+<div class="relative min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-900 overflow-hidden">
+  <!-- Imagen de Fondo -->
+  <div class="absolute inset-0 z-0">
     <img 
-      src="https://img.freepik.com/foto-gratis/playa-hermosa-vista-marino-isla-koh-chang-provincia-trad-tailandia-sobre-fondo-cielo-azul_1150-10256.jpg?t=st=1745106554~exp=1745110154~hmac=53f5e92a3090aef82af7c4fb52069711ee95862f2c0a0792373c3eeb00730c5a&w=996" 
-      alt="Trabajando" 
-      class="rounded-lg shadow-lg max-w-full max-h-[500px] object-contain"
+      src="assets/fondoconecta.jpeg" 
+      alt="Fondo Conecta" 
+      class="w-full h-full object-cover opacity-60"
     />
-  </form>
+    <!-- Overlay de Gradiente Oscuro -->
+    <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a]/90 via-[#0f172a]/60 to-[#0f172a]/30"></div>
+  </div>
+
+  <!-- Contenido Central -->
+  <div class="relative z-10 w-full max-w-5xl p-6 md:p-12 flex flex-col items-center text-center">
+    
+    <!-- Bienvenida -->
+    <div class="mb-12">
+      <div class="inline-block px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-300 text-sm font-semibold tracking-wide uppercase mb-6 shadow-sm">
+        Plataforma Principal
+      </div>
+      
+      <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight mb-4 drop-shadow-lg">
+        Bienvenido a <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#008d92] to-[#64b0a8]">CONECTA</span>
+      </h1>
+      
+      <p class="text-xl md:text-2xl text-gray-300 font-medium max-w-2xl mx-auto drop-shadow-md">
+        @if (currentUser()) {
+          Hola, <span class="text-white">{{ currentUser()?.username }}</span>.
+        }
+        ¿Qué te gustaría gestionar hoy?
+      </p>
+    </div>
+
+    <!-- Sugerencias / Accesos Rápidos -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+      
+      <!-- Card 1: Dashboard -->
+      <a routerLink="/dashboard" class="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 p-8 rounded-2xl hover:bg-slate-800/60 transition-all cursor-pointer group hover:-translate-y-2 hover:shadow-2xl hover:shadow-teal-900/20 flex flex-col items-center text-center">
+        <div class="w-16 h-16 bg-[#008d92]/10 border border-[#008d92]/20 text-[#008d92] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-[#008d92]/20 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
+          </svg>
+        </div>
+        <h3 class="text-white font-bold text-xl mb-3 group-hover:text-[#008d92] transition-colors">Dashboard Analítico</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">Visualiza las métricas clave, el rendimiento operativo y los ingresos de la empresa en tiempo real.</p>
+      </a>
+
+      <!-- Card 2: Clientes -->
+      <a routerLink="/clientes" class="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 p-8 rounded-2xl hover:bg-slate-800/60 transition-all cursor-pointer group hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-900/20 flex flex-col items-center text-center">
+        <div class="w-16 h-16 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-blue-500/20 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+          </svg>
+        </div>
+        <h3 class="text-white font-bold text-xl mb-3 group-hover:text-blue-400 transition-colors">Gestión de Clientes</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">Administra la base de abonados, registra nuevas ventas y consulta el historial de servicios.</p>
+      </a>
+
+      <!-- Card 3: Operaciones / Pagos -->
+      <a routerLink="/pagos" class="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 p-8 rounded-2xl hover:bg-slate-800/60 transition-all cursor-pointer group hover:-translate-y-2 hover:shadow-2xl hover:shadow-emerald-900/20 flex flex-col items-center text-center">
+        <div class="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V5.25c0-.754-.726-1.294-1.453-1.096a60.07 60.07 0 01-15.797 2.101c-.727.198-1.453-.342-1.453-1.096V5.25c0-.754.726-1.294 1.453-1.096a60.07 60.07 0 0115.797-2.101c.727-.198 1.453.342 1.453 1.096v13.5c0 .754-.726 1.294-1.453 1.096a60.07 60.07 0 01-15.797-2.101c-.727-.198-1.453.342-1.453 1.096z" />
+          </svg>
+        </div>
+        <h3 class="text-white font-bold text-xl mb-3 group-hover:text-emerald-400 transition-colors">Registro de Pagos</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">Registra recaudaciones, emite comprobantes y revisa el historial de pagos de los clientes.</p>
+      </a>
+
+    </div>
+  </div>
 </div>

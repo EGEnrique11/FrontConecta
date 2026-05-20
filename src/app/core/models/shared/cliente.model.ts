@@ -12,6 +12,7 @@ export interface ClienteRegistrationDTO {
     correo: string;
     celular: string;
     fechaNacimiento: string;
+    empleadoId?: number;
     direccion: DireccionDto;
 }
 //Para las consultas

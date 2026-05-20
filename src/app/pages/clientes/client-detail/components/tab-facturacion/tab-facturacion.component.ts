@@ -4,6 +4,7 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { FacturacionHttpService } from '../../../../../core/infrastructure/facturacion-http.service';
 import { DocumentoHttpService } from '../../../../../core/infrastructure/documento-http.service';
 import { ReciboListDTO } from '../../../../../core/models/facturacion/facturacion.model';
+import { ClienteHttpService } from '../../../../../core/infrastructure/cliente-http.service';
 
 @Component({
   selector: 'app-tab-facturacion',
@@ -26,6 +27,7 @@ export class TabFacturacionComponent implements OnInit {
 
   private facturacionService = inject(FacturacionHttpService);
   private documentoService = inject(DocumentoHttpService);
+  private clienteService = inject(ClienteHttpService);
 
   ngOnInit(): void {
     this.loadData();
@@ -54,7 +56,7 @@ export class TabFacturacionComponent implements OnInit {
         }
       });
     } else if (this.activeSubTab() === 'DOCUMENTOS') {
-      this.facturacionService.obtenerDocumentosPorCliente(this.clienteId()).subscribe({
+      this.clienteService.obtenerContratosPorCliente(this.clienteId()).subscribe({
         next: (res) => {
           this.data.set(res);
           this.isLoading.set(false);
@@ -87,5 +89,27 @@ export class TabFacturacionComponent implements OnInit {
       a.click();
       document.body.removeChild(a);
     });
+  }
+
+  descargarContrato(contratoId: number) {
+    this.documentoService.downloadContratoPdf(contratoId).subscribe((blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Contrato_${contratoId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+  }
+
+  enviarContrato(contratoId: number) {
+    const email = prompt('Ingrese el correo electrónico al que desea enviar el contrato:');
+    if (email) {
+      this.documentoService.enviarContratoPorCorreo(contratoId, { correoDestino: email }).subscribe({
+        next: () => alert('Contrato enviado exitosamente.'),
+        error: (err) => alert('Error al enviar el contrato: ' + (err.error?.message || err.message))
+      });
+    }
   }
 }
