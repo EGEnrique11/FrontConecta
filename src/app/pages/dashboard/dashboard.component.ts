@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
-import { LucideAngularModule, Users, FileText, TrendingDown, DollarSign, Activity, Briefcase } from 'lucide-angular';
+import { LucideAngularModule, Users, FileText, TrendingDown, DollarSign, Activity, Briefcase, Check} from 'lucide-angular';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { DashboardStateService } from '../../features/dashboard/services/dashboard-state.service';
 import { ChartConfiguration, ChartType } from 'chart.js';
@@ -16,8 +16,9 @@ import { ChartConfiguration, ChartType } from 'chart.js';
 export default class DashboardComponent implements OnInit {
   readonly state = inject(DashboardStateService);
 
-  // Icons from Lucide
+  // Icons de Lucide
   readonly UsersIcon = Users;
+  readonly CheckIcon = Check;
   readonly FileTextIcon = FileText;
   readonly TrendingDownIcon = TrendingDown;
   readonly DollarSignIcon = DollarSign;
@@ -91,11 +92,27 @@ export default class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.state.loadAllDashboardData();
+    this.state.loadCrecimientoMensual();
   }
 
-  onFilterChange(inicio: string, fin: string): void {
-    if (inicio && fin) {
-      this.state.actualizarFiltrosInstalaciones(inicio, fin);
+  //Global
+  applyGlobalFilter(inicio: string, fin: string): void{
+    if (inicio && fin){
+      this.state.actualizarRangoFechasGlobal(inicio, fin);
     }
+  }
+  //Crecimiento Mensual
+  applyCrecimientoFilter(inicio: string, fin: string): void{
+    if(inicio && fin){
+      this.state.actualizarRangoFechasCrecimiento(inicio, fin);
+    }
+  }
+
+  exportarProductividadExcel(): void {
+    this.state.exportarProductividad();
+  }
+
+  exportarVendedoresExcel(): void {
+    this.state.exportarVendedores();
   }
 }

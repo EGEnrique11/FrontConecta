@@ -1,19 +1,77 @@
 <div class="min-h-screen bg-gray-50 p-6 space-y-6">
-  
-  <div class="flex items-center justify-between mb-2">
+
+  <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
     <div>
       <h1 class="text-2xl font-bold text-gray-800">Dashboard de Análisis de Conecta</h1>
       <p class="text-sm text-gray-500">Métricas y rendimiento comercial en tiempo real</p>
     </div>
-    <div class="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-100 flex items-center gap-2">
-      <lucide-icon [img]="ActivityIcon" class="w-5 h-5 text-teal-600"></lucide-icon>
-      <span class="text-sm font-semibold text-gray-700">Estado: En Vivo</span>
+    <div class="flex flex-wrap items-center gap-3 justify-end">
+
+      <!-- Date Picker Global -->
+      <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-gray-300 shadow-sm">
+        <input type="date" #inicioInput [value]="state.fechaInicio()"
+          class="text-sm border-none focus:ring-0 text-gray-700 bg-transparent cursor-pointer">
+        <span class="text-gray-400 text-sm font-medium">a</span>
+        <input type="date" #finInput [value]="state.fechaFin()"
+          class="text-sm border-none focus:ring-0 text-gray-700 bg-transparent cursor-pointer">
+        <div class="h-6 w-px bg-gray-200 mx-1"></div>
+        <button (click)="applyGlobalFilter(inicioInput.value, finInput.value)"
+          class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+          tittle="Aplicar filtro Global">
+          <lucide-icon [img]="CheckIcon" class="w-4 h-4"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Botón Productividad Técnica -->
+      <button (click)="exportarProductividadExcel()" [disabled]="state.isExportingProductividad()"
+        class="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        @if (state.isExportingProductividad()) {
+        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none"
+          viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+          </path>
+        </svg> Descargando...
+        } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-4 h-4 text-blue-600">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
+        </svg> Exportar Productividad
+        }
+      </button>
+
+      <!-- Botón Ranking Vendedores -->
+      <button (click)="exportarVendedoresExcel()" [disabled]="state.isExportingVendedores()"
+        class="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        @if (state.isExportingVendedores()) {
+        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none"
+          viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+          </path>
+        </svg> Descargando...
+        } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-4 h-4 text-green-600">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V5.25c0-.754-.726-1.294-1.453-1.096a60.07 60.07 0 01-15.797 2.101c-.727.198-1.453-.342-1.453-1.096V5.25c0-.754.726-1.294 1.453-1.096a60.07 60.07 0 0115.797-2.101c.727-.198 1.453.342 1.453 1.096v13.5c0 .754-.726 1.294-1.453 1.096a60.07 60.07 0 01-15.797-2.101c-.727-.198-1.453.342-1.453 1.096z" />
+        </svg> Exportar Ventas
+        }
+      </button>
+
+      <div class="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-100 flex items-center gap-2">
+        <lucide-icon [img]="ActivityIcon" class="w-5 h-5 text-teal-600"></lucide-icon>
+        <span class="text-sm font-semibold text-gray-700">Estado: En Vivo</span>
+      </div>
     </div>
   </div>
 
   <!-- Top Grid: KPIs -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    
+
     <!-- Clientes Activos -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
       <div class="flex justify-between items-start mb-4">
@@ -25,9 +83,10 @@
       <div>
         <h3 class="text-gray-500 text-sm font-medium mb-1">Clientes Activos</h3>
         @if (state.isLoading()) {
-          <ngx-skeleton-loader count="1" appearance="line" [theme]="{ height: '32px', width: '60%' }"></ngx-skeleton-loader>
+        <ngx-skeleton-loader count="1" appearance="line"
+          [theme]="{ height: '32px', width: '60%' }"></ngx-skeleton-loader>
         } @else {
-          <p class="text-3xl font-black text-gray-800">{{ state.resumen()?.totalClientesActivos | number }}</p>
+        <p class="text-3xl font-black text-gray-800">{{ state.resumen()?.totalClientesActivos | number }}</p>
         }
       </div>
     </div>
@@ -43,9 +102,10 @@
       <div>
         <h3 class="text-gray-500 text-sm font-medium mb-1">Instalaciones Pendientes</h3>
         @if (state.isLoading()) {
-          <ngx-skeleton-loader count="1" appearance="line" [theme]="{ height: '32px', width: '60%' }"></ngx-skeleton-loader>
+        <ngx-skeleton-loader count="1" appearance="line"
+          [theme]="{ height: '32px', width: '60%' }"></ngx-skeleton-loader>
         } @else {
-          <p class="text-3xl font-black text-gray-800">{{ state.resumen()?.instalacionesPendientesHoy | number }}</p>
+        <p class="text-3xl font-black text-gray-800">{{ state.resumen()?.instalacionesPendientesHoy | number }}</p>
         }
       </div>
     </div>
@@ -61,9 +121,10 @@
       <div>
         <h3 class="text-gray-500 text-sm font-medium mb-1">Tasa de Mora</h3>
         @if (state.isLoading()) {
-          <ngx-skeleton-loader count="1" appearance="line" [theme]="{ height: '32px', width: '60%' }"></ngx-skeleton-loader>
+        <ngx-skeleton-loader count="1" appearance="line"
+          [theme]="{ height: '32px', width: '60%' }"></ngx-skeleton-loader>
         } @else {
-          <p class="text-3xl font-black text-red-600">{{ state.resumen()?.tasaMoraPorcentual | number:'1.1-2' }}%</p>
+        <p class="text-3xl font-black text-red-600">{{ state.resumen()?.tasaMoraPorcentual | number:'1.1-2' }}%</p>
         }
       </div>
     </div>
@@ -79,9 +140,11 @@
       <div>
         <h3 class="text-gray-500 text-sm font-medium mb-1">Ingresos Estimados</h3>
         @if (state.isLoading()) {
-          <ngx-skeleton-loader count="1" appearance="line" [theme]="{ height: '32px', width: '60%' }"></ngx-skeleton-loader>
+        <ngx-skeleton-loader count="1" appearance="line"
+          [theme]="{ height: '32px', width: '60%' }"></ngx-skeleton-loader>
         } @else {
-          <p class="text-3xl font-black text-emerald-600">{{ state.resumen()?.ingresosMesActual | currency:'S/':'symbol' }}</p>
+        <p class="text-3xl font-black text-emerald-600">{{ state.resumen()?.ingresosMesActual | currency:'S/':'symbol'
+          }}</p>
         }
       </div>
     </div>
@@ -95,72 +158,94 @@
         <h3 class="text-lg font-bold text-gray-800">Estado de Instalaciones</h3>
         <p class="text-sm text-gray-500">Recuento dinámico por rango de fechas</p>
       </div>
-      <div class="flex items-center gap-3">
-        <input type="date" #inicioInput [value]="state.filtroInstalacionesInicio()" (change)="onFilterChange(inicioInput.value, finInput.value)" class="text-sm border-gray-300 rounded-md shadow-sm focus:border-teal-500 focus:ring-teal-500">
-        <span class="text-gray-500 text-sm">hasta</span>
-        <input type="date" #finInput [value]="state.filtroInstalacionesFin()" (change)="onFilterChange(inicioInput.value, finInput.value)" class="text-sm border-gray-300 rounded-md shadow-sm focus:border-teal-500 focus:ring-teal-500">
-      </div>
     </div>
 
     @if (state.instalacionesLoading()) {
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <ngx-skeleton-loader count="6" appearance="line" [theme]="{ height: '100px', borderRadius: '0.75rem' }"></ngx-skeleton-loader>
-      </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <ngx-skeleton-loader count="6" appearance="line"
+        [theme]="{ height: '100px', borderRadius: '0.75rem' }"></ngx-skeleton-loader>
+    </div>
     } @else {
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <!-- TOTAL -->
-        <div class="bg-gray-50 rounded-xl p-4 flex flex-col items-center justify-center text-center border border-gray-100">
-          <span class="text-xs font-bold text-gray-500 uppercase mb-1">Total</span>
-          <span class="text-3xl font-black text-gray-800">{{ state.instalacionesEstados()?.['TOTAL'] || 0 }}</span>
-        </div>
-        <!-- PENDIENTE -->
-        <div class="bg-yellow-50 rounded-xl p-4 flex flex-col items-center justify-center text-center border border-yellow-100">
-          <span class="text-xs font-bold text-yellow-600 uppercase mb-1">Pendiente</span>
-          <span class="text-3xl font-black text-yellow-700">{{ state.instalacionesEstados()?.['PENDIENTE'] || 0 }}</span>
-        </div>
-        <!-- EN_RUTA -->
-        <div class="bg-blue-50 rounded-xl p-4 flex flex-col items-center justify-center text-center border border-blue-100">
-          <span class="text-xs font-bold text-blue-600 uppercase mb-1">En Ruta</span>
-          <span class="text-3xl font-black text-blue-700">{{ state.instalacionesEstados()?.['EN_RUTA'] || 0 }}</span>
-        </div>
-        <!-- EN_PROGRESO -->
-        <div class="bg-indigo-50 rounded-xl p-4 flex flex-col items-center justify-center text-center border border-indigo-100">
-          <span class="text-xs font-bold text-indigo-600 uppercase mb-1">En Progreso</span>
-          <span class="text-3xl font-black text-indigo-700">{{ state.instalacionesEstados()?.['EN_PROGRESO'] || 0 }}</span>
-        </div>
-        <!-- COMPLETADA -->
-        <div class="bg-green-50 rounded-xl p-4 flex flex-col items-center justify-center text-center border border-green-100">
-          <span class="text-xs font-bold text-green-600 uppercase mb-1">Completada</span>
-          <span class="text-3xl font-black text-green-700">{{ state.instalacionesEstados()?.['COMPLETADA'] || 0 }}</span>
-        </div>
-        <!-- CANCELADA / REPROGRAMADA -->
-        <div class="bg-red-50 rounded-xl p-4 flex flex-col items-center justify-center text-center border border-red-100 relative group cursor-pointer">
-          <span class="text-xs font-bold text-red-600 uppercase mb-1">Canceladas</span>
-          <span class="text-3xl font-black text-red-700">{{ state.instalacionesEstados()?.['CANCELADA'] || 0 }}</span>
-          
-          <div class="absolute -top-3 -right-3 bg-orange-100 border border-orange-200 text-orange-700 text-[10px] font-bold px-2 py-1 rounded-full shadow-sm" title="Reprogramadas">
-            {{ state.instalacionesEstados()?.['REPROGRAMADA'] || 0 }} Rep.
-          </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <!-- TOTAL -->
+      <div
+        class="bg-gray-50 rounded-xl p-4 flex flex-col items-center justify-center text-center border border-gray-100">
+        <span class="text-xs font-bold text-gray-500 uppercase mb-1">Total</span>
+        <span class="text-3xl font-black text-gray-800">{{ state.instalacionesEstados()?.['TOTAL'] || 0 }}</span>
+      </div>
+      <!-- PENDIENTE -->
+      <div
+        class="bg-yellow-50 rounded-xl p-4 flex flex-col items-center justify-center text-center border border-yellow-100">
+        <span class="text-xs font-bold text-yellow-600 uppercase mb-1">Pendiente</span>
+        <span class="text-3xl font-black text-yellow-700">{{ state.instalacionesEstados()?.['PENDIENTE'] || 0 }}</span>
+      </div>
+      <!-- EN_RUTA -->
+      <div
+        class="bg-blue-50 rounded-xl p-4 flex flex-col items-center justify-center text-center border border-blue-100">
+        <span class="text-xs font-bold text-blue-600 uppercase mb-1">En Ruta</span>
+        <span class="text-3xl font-black text-blue-700">{{ state.instalacionesEstados()?.['EN_RUTA'] || 0 }}</span>
+      </div>
+      <!-- EN_PROGRESO -->
+      <div
+        class="bg-indigo-50 rounded-xl p-4 flex flex-col items-center justify-center text-center border border-indigo-100">
+        <span class="text-xs font-bold text-indigo-600 uppercase mb-1">En Progreso</span>
+        <span class="text-3xl font-black text-indigo-700">{{ state.instalacionesEstados()?.['EN_PROGRESO'] || 0
+          }}</span>
+      </div>
+      <!-- COMPLETADA -->
+      <div
+        class="bg-green-50 rounded-xl p-4 flex flex-col items-center justify-center text-center border border-green-100">
+        <span class="text-xs font-bold text-green-600 uppercase mb-1">Completada</span>
+        <span class="text-3xl font-black text-green-700">{{ state.instalacionesEstados()?.['COMPLETADA'] || 0 }}</span>
+      </div>
+      <!-- CANCELADA / REPROGRAMADA -->
+      <div
+        class="bg-red-50 rounded-xl p-4 flex flex-col items-center justify-center text-center border border-red-100 relative group cursor-pointer">
+        <span class="text-xs font-bold text-red-600 uppercase mb-1">Canceladas</span>
+        <span class="text-3xl font-black text-red-700">{{ state.instalacionesEstados()?.['CANCELADA'] || 0 }}</span>
+
+        <div
+          class="absolute -top-3 -right-3 bg-orange-100 border border-orange-200 text-orange-700 text-[10px] font-bold px-2 py-1 rounded-full shadow-sm"
+          title="Reprogramadas">
+          {{ state.instalacionesEstados()?.['REPROGRAMADA'] || 0 }} Rep.
         </div>
       </div>
+    </div>
     }
   </div>
 
   <!-- Middle Section: Charts -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    
+
     <!-- Crecimiento Mensual -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 lg:col-span-2">
-      <h3 class="text-lg font-bold text-gray-800 mb-4">Crecimiento Mensual (Clientes)</h3>
+      <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Crecimiento Mensual (Clientes)</h3>
+        <div
+          class="flex items-center gap-2 bg-gray-50 pl-3 pr-1 py-1 rounded-lg border border-gray-200 shadow-sm focus-within:border-blue-500 transition-all">
+          <input type="date" #inicioCrecimiento [value]="state.crecimientoFechaInicio()"
+            class="text-xs border-none focus:ring-0 text-gray-700 bg-transparent cursor-pointer p-1">
+          <span class="text-gray-400 text-xs font-medium">a</span>
+          <input type="date" #finCrecimiento [value]="state.crecimientoFechaFin()"
+            class="text-xs border-none focus:ring-0 text-gray-700 bg-transparent cursor-pointer p-1">
+
+          <div class="h-5 w-px bg-gray-300 mx-1"></div>
+
+          <button (click)="applyCrecimientoFilter(inicioCrecimiento.value, finCrecimiento.value)"
+            class="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+            title="Aplicar filtro al gráfico">
+            <lucide-icon [img]="CheckIcon" class="w-4 h-4"></lucide-icon>
+          </button>
+        </div>
+      </div>
+
       <div class="h-80 w-full relative">
-        @if (state.isLoading()) {
-          <ngx-skeleton-loader count="1" appearance="line" [theme]="{ height: '100%', width: '100%' }"></ngx-skeleton-loader>
+        @if (state.crecimientoLoading()) {
+        <ngx-skeleton-loader count="1" appearance="line"
+          [theme]="{ height: '100%', width: '100%' }"></ngx-skeleton-loader>
         } @else {
-          <canvas baseChart
-                  [data]="lineChartData()"
-                  [options]="lineChartOptions"
-                  [type]="lineChartType">
-          </canvas>
+        <canvas baseChart [data]="lineChartData()" [options]="lineChartOptions" [type]="lineChartType">
+        </canvas>
         }
       </div>
     </div>
@@ -170,13 +255,11 @@
       <h3 class="text-lg font-bold text-gray-800 mb-4">Distribución Financiera</h3>
       <div class="h-64 w-full relative mb-6">
         @if (state.isLoading()) {
-          <ngx-skeleton-loader count="1" appearance="circle" [theme]="{ height: '240px', width: '240px', margin: 'auto' }"></ngx-skeleton-loader>
+        <ngx-skeleton-loader count="1" appearance="circle"
+          [theme]="{ height: '240px', width: '240px', margin: 'auto' }"></ngx-skeleton-loader>
         } @else {
-          <canvas baseChart
-                  [data]="doughnutChartData()"
-                  [options]="doughnutChartOptions"
-                  [type]="doughnutChartType">
-          </canvas>
+        <canvas baseChart [data]="doughnutChartData()" [options]="doughnutChartOptions" [type]="doughnutChartType">
+        </canvas>
         }
       </div>
       <div class="border-t border-gray-100 pt-4 flex justify-between text-sm">
@@ -194,7 +277,7 @@
 
   <!-- Bottom Section: Data Tables -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    
+
     <!-- Rendimiento Vendedores -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
       <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -202,35 +285,35 @@
         Ranking de Vendedores (Mes)
       </h3>
       @if (state.isLoading()) {
-        <div class="space-y-3">
-          <ngx-skeleton-loader count="5" appearance="line" [theme]="{ height: '40px' }"></ngx-skeleton-loader>
-        </div>
+      <div class="space-y-3">
+        <ngx-skeleton-loader count="5" appearance="line" [theme]="{ height: '40px' }"></ngx-skeleton-loader>
+      </div>
       } @else {
-        <div class="overflow-hidden rounded-lg border border-gray-100">
-          <table class="w-full text-left text-sm text-gray-600">
-            <thead class="bg-gray-50 text-xs uppercase text-gray-500 border-b border-gray-100">
-              <tr>
-                <th class="px-4 py-3">Vendedor</th>
-                <th class="px-4 py-3 text-right">Contratos Vendidos</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              @for (v of state.rendimientoVendedores(); track v.vendedor; let i = $index) {
-                <tr class="hover:bg-gray-50">
-                  <td class="px-4 py-3 font-medium text-gray-900">
-                    <span class="inline-block w-6 text-gray-400 font-bold">#{{i+1}}</span> {{ v.vendedor }}
-                  </td>
-                  <td class="px-4 py-3 text-right font-bold text-teal-600">{{ v.cantidad }}</td>
-                </tr>
-              }
-              @if (state.rendimientoVendedores().length === 0) {
-                <tr>
-                  <td colspan="2" class="px-4 py-8 text-center text-gray-500">No hay datos de ventas en este periodo.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+      <div class="overflow-hidden rounded-lg border border-gray-100">
+        <table class="w-full text-left text-sm text-gray-600">
+          <thead class="bg-gray-50 text-xs uppercase text-gray-500 border-b border-gray-100">
+            <tr>
+              <th class="px-4 py-3">Vendedor</th>
+              <th class="px-4 py-3 text-right">Contratos Vendidos</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @for (v of state.rendimientoVendedores(); track v.vendedor; let i = $index) {
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-3 font-medium text-gray-900">
+                <span class="inline-block w-6 text-gray-400 font-bold">#{{i+1}}</span> {{ v.vendedor }}
+              </td>
+              <td class="px-4 py-3 text-right font-bold text-teal-600">{{ v.cantidad }}</td>
+            </tr>
+            }
+            @if (state.rendimientoVendedores().length === 0) {
+            <tr>
+              <td colspan="2" class="px-4 py-8 text-center text-gray-500">No hay datos de ventas en este periodo.</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
       }
     </div>
 
@@ -242,44 +325,44 @@
           Productividad Técnica
         </h3>
         @if (!state.isLoading() && state.tasaInstalacion()) {
-          <span class="bg-teal-50 text-teal-700 text-xs font-bold px-2.5 py-1 rounded-full">
-            Éxito: {{ state.tasaInstalacion()?.tasaExitoPorcentaje | number:'1.1-1' }}%
-          </span>
+        <span class="bg-teal-50 text-teal-700 text-xs font-bold px-2.5 py-1 rounded-full">
+          Éxito: {{ state.tasaInstalacion()?.tasaExitoPorcentaje | number:'1.1-1' }}%
+        </span>
         }
       </div>
-      
+
       @if (state.isLoading()) {
-        <div class="space-y-3">
-          <ngx-skeleton-loader count="5" appearance="line" [theme]="{ height: '40px' }"></ngx-skeleton-loader>
-        </div>
+      <div class="space-y-3">
+        <ngx-skeleton-loader count="5" appearance="line" [theme]="{ height: '40px' }"></ngx-skeleton-loader>
+      </div>
       } @else {
-        <div class="overflow-hidden rounded-lg border border-gray-100">
-          <table class="w-full text-left text-sm text-gray-600">
-            <thead class="bg-gray-50 text-xs uppercase text-gray-500 border-b border-gray-100">
-              <tr>
-                <th class="px-4 py-3">Técnico</th>
-                <th class="px-4 py-3 text-center text-green-600"><i class="fas fa-check"></i> Comp.</th>
-                <th class="px-4 py-3 text-center text-red-600"><i class="fas fa-times"></i> Canc.</th>
-                <th class="px-4 py-3 text-center text-orange-600"><i class="fas fa-sync"></i> Rep.</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              @for (t of state.productividadTecnica(); track t.tecnico) {
-                <tr class="hover:bg-gray-50">
-                  <td class="px-4 py-3 font-medium text-gray-900">{{ t.tecnico }}</td>
-                  <td class="px-4 py-3 text-center font-semibold">{{ t.completadas }}</td>
-                  <td class="px-4 py-3 text-center text-gray-500">{{ t.canceladas }}</td>
-                  <td class="px-4 py-3 text-center text-gray-500">{{ t.reprogramadas }}</td>
-                </tr>
-              }
-              @if (state.productividadTecnica().length === 0) {
-                <tr>
-                  <td colspan="4" class="px-4 py-8 text-center text-gray-500">No hay operaciones registradas.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+      <div class="overflow-hidden rounded-lg border border-gray-100">
+        <table class="w-full text-left text-sm text-gray-600">
+          <thead class="bg-gray-50 text-xs uppercase text-gray-500 border-b border-gray-100">
+            <tr>
+              <th class="px-4 py-3">Técnico</th>
+              <th class="px-4 py-3 text-center text-green-600"><i class="fas fa-check"></i> Comp.</th>
+              <th class="px-4 py-3 text-center text-red-600"><i class="fas fa-times"></i> Canc.</th>
+              <th class="px-4 py-3 text-center text-orange-600"><i class="fas fa-sync"></i> Rep.</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @for (t of state.productividadTecnica(); track t.tecnico) {
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-3 font-medium text-gray-900">{{ t.tecnico }}</td>
+              <td class="px-4 py-3 text-center font-semibold">{{ t.completadas }}</td>
+              <td class="px-4 py-3 text-center text-gray-500">{{ t.canceladas }}</td>
+              <td class="px-4 py-3 text-center text-gray-500">{{ t.reprogramadas }}</td>
+            </tr>
+            }
+            @if (state.productividadTecnica().length === 0) {
+            <tr>
+              <td colspan="4" class="px-4 py-8 text-center text-gray-500">No hay operaciones registradas.</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
       }
     </div>
 
