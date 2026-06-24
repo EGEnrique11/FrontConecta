@@ -8,7 +8,7 @@ import { PagoRequest } from '../models/pagos/pago.model';
 })
 export class PagoHttpService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/v1/pagos';
+  private readonly apiUrl = '/api/v1/pagos';
 
   registrarPago(pago: PagoRequest): Observable<any> {
     return this.http.post(this.apiUrl, pago);

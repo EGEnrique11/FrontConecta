@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class VentasHttpService {
   private http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/v1';
+  private readonly baseUrl = '/api/v1';
 
   getPlanesActivos(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/catalogo/planes`);

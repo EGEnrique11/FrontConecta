@@ -8,6 +8,7 @@ export const roleGuard: CanMatchFn = (route: Route, segments: UrlSegment[]): boo
   const requiredRoles = route.data?.['roles'] as string[] || [];
 
   const userRoles = authService.userRoles();
+  console.log('Roles del usuario:', userRoles)
   const hasRole = requiredRoles.some(r => userRoles.includes(r));
   if(hasRole){
     return true;

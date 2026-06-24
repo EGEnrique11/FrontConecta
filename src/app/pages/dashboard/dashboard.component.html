@@ -279,7 +279,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
     <!-- Rendimiento Vendedores -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 overflow-hidden">
       <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
         <lucide-icon [img]="BriefcaseIcon" class="w-5 h-5 text-gray-400"></lucide-icon>
         Ranking de Vendedores (Mes)
@@ -289,12 +289,17 @@
         <ngx-skeleton-loader count="5" appearance="line" [theme]="{ height: '40px' }"></ngx-skeleton-loader>
       </div>
       } @else {
-      <div class="overflow-hidden rounded-lg border border-gray-100">
-        <table class="w-full text-left text-sm text-gray-600">
+      <div class="overflow-x-auto rounded-lg border border-gray-100">
+        <table class="w-full text-left text-sm text-gray-600 whitespace-nowrap">
           <thead class="bg-gray-50 text-xs uppercase text-gray-500 border-b border-gray-100">
             <tr>
               <th class="px-4 py-3">Vendedor</th>
-              <th class="px-4 py-3 text-right">Contratos Vendidos</th>
+              <th class="px-3 py-3 text-center text-yellow-600" title="Pendientes">Pend.</th>
+              <th class="px-3 py-3 text-center text-green-600" title="Activos">Act.</th>
+              <th class="px-3 py-3 text-center text-indigo-600" title="Suspendidos">Susp.</th>
+              <th class="px-3 py-3 text-center text-red-600" title="Cancelados">Canc.</th>
+              <th class="px-3 py-3 text-center text-blue-600" title="Total Instaladas (Activos + Suspendidos)">Instal.</th>
+              <th class="px-4 py-3 text-center text-gray-700">Total</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
@@ -303,12 +308,17 @@
               <td class="px-4 py-3 font-medium text-gray-900">
                 <span class="inline-block w-6 text-gray-400 font-bold">#{{i+1}}</span> {{ v.vendedor }}
               </td>
-              <td class="px-4 py-3 text-right font-bold text-teal-600">{{ v.cantidad }}</td>
+              <td class="px-3 py-3 text-center font-medium">{{ v.pendientes }}</td>
+              <td class="px-3 py-3 text-center font-medium">{{ v.activos }}</td>
+              <td class="px-3 py-3 text-center text-gray-500">{{ v.suspendidos }}</td>
+              <td class="px-3 py-3 text-center text-gray-500">{{ v.cancelados }}</td>
+              <td class="px-3 py-3 text-center font-semibold text-blue-600">{{ v.instaladas }}</td>
+              <td class="px-4 py-3 text-center font-bold text-gray-800">{{ v.total }}</td>
             </tr>
             }
             @if (state.rendimientoVendedores().length === 0) {
             <tr>
-              <td colspan="2" class="px-4 py-8 text-center text-gray-500">No hay datos de ventas en este periodo.</td>
+              <td colspan="7" class="px-4 py-8 text-center text-gray-500">No hay datos de ventas en este periodo.</td>
             </tr>
             }
           </tbody>
@@ -318,7 +328,7 @@
     </div>
 
     <!-- Productividad Técnica -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 overflow-hidden">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
           <lucide-icon [img]="ActivityIcon" class="w-5 h-5 text-gray-400"></lucide-icon>
@@ -336,28 +346,34 @@
         <ngx-skeleton-loader count="5" appearance="line" [theme]="{ height: '40px' }"></ngx-skeleton-loader>
       </div>
       } @else {
-      <div class="overflow-hidden rounded-lg border border-gray-100">
-        <table class="w-full text-left text-sm text-gray-600">
+      <div class="overflow-x-auto rounded-lg border border-gray-100">
+        <table class="w-full text-left text-sm text-gray-600 whitespace-nowrap">
           <thead class="bg-gray-50 text-xs uppercase text-gray-500 border-b border-gray-100">
             <tr>
               <th class="px-4 py-3">Técnico</th>
-              <th class="px-4 py-3 text-center text-green-600"><i class="fas fa-check"></i> Comp.</th>
-              <th class="px-4 py-3 text-center text-red-600"><i class="fas fa-times"></i> Canc.</th>
-              <th class="px-4 py-3 text-center text-orange-600"><i class="fas fa-sync"></i> Rep.</th>
+              <th class="px-3 py-3 text-center text-green-600"><i class="fas fa-check" title="Completadas"></i> Comp.</th>
+              <th class="px-3 py-3 text-center text-blue-600"><i class="fas fa-route" title="En Ruta"></i> Ruta</th>
+              <th class="px-3 py-3 text-center text-yellow-600"><i class="fas fa-spinner" title="En Proceso"></i> Proc.</th>
+              <th class="px-3 py-3 text-center text-orange-600"><i class="fas fa-sync" title="Reprogramadas"></i> Rep.</th>
+              <th class="px-3 py-3 text-center text-red-600"><i class="fas fa-times" title="Canceladas"></i> Canc.</th>
+              <th class="px-4 py-3 text-center text-gray-700">Total</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
             @for (t of state.productividadTecnica(); track t.tecnico) {
             <tr class="hover:bg-gray-50">
               <td class="px-4 py-3 font-medium text-gray-900">{{ t.tecnico }}</td>
-              <td class="px-4 py-3 text-center font-semibold">{{ t.completadas }}</td>
-              <td class="px-4 py-3 text-center text-gray-500">{{ t.canceladas }}</td>
-              <td class="px-4 py-3 text-center text-gray-500">{{ t.reprogramadas }}</td>
+              <td class="px-3 py-3 text-center font-semibold text-green-600">{{ t.completadas }}</td>
+              <td class="px-3 py-3 text-center text-blue-600">{{ t.enRuta }}</td>
+              <td class="px-3 py-3 text-center text-yellow-600">{{ t.enProceso }}</td>
+              <td class="px-3 py-3 text-center text-gray-500">{{ t.reprogramadas }}</td>
+              <td class="px-3 py-3 text-center text-gray-500">{{ t.canceladas }}</td>
+              <td class="px-4 py-3 text-center font-bold text-gray-800">{{ t.total }}</td>
             </tr>
             }
             @if (state.productividadTecnica().length === 0) {
             <tr>
-              <td colspan="4" class="px-4 py-8 text-center text-gray-500">No hay operaciones registradas.</td>
+              <td colspan="7" class="px-4 py-8 text-center text-gray-500">No hay operaciones registradas.</td>
             </tr>
             }
           </tbody>

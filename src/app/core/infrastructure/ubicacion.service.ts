@@ -8,7 +8,7 @@ import { Ubicacion } from '../models/ubicaciones.model';
 })
 export class UbicacionService {
   private http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/v1/ubicaciones';
+  private readonly baseUrl = '/api/v1/ubicaciones';
 
   getDepartamentos(): Observable<Ubicacion[]> {
     return this.http.get<Ubicacion[]>(`${this.baseUrl}/departamentos`);

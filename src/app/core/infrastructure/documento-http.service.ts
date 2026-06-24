@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 })
 export class DocumentoHttpService {
   private http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/v1/documentos';
+  private readonly baseUrl = '/api/v1/documentos';
 
   enviarContratoPorCorreo(contratoId: number, request: EmailRequestDTO): Observable<any>{
     return this.http.post(`${this.baseUrl}/contrato/${contratoId}/enviar-correo`, request);

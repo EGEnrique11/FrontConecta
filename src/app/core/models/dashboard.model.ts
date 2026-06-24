@@ -32,11 +32,19 @@ export interface ProductividadTecnica {
     completadas: number;
     canceladas: number;
     reprogramadas: number;
+    enRuta: number;
+    enProceso: number;
+    total: number;
 }
 
 export interface RendimientoVendedor {
     vendedor: string;
-    cantidad: number;
+    pendientes: number;
+    activos: number;
+    suspendidos: number;
+    cancelados: number;
+    instaladas: number;
+    total: number;
 }
 
 export type InstalacionesEstados = Record<string, number>;

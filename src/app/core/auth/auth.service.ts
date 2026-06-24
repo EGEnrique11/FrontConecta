@@ -20,7 +20,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  private readonly API_URL = 'http://localhost:8080/api/v1/auth';
+  private readonly API_URL = '/api/v1/auth';
   private readonly ACCESS_TOKEN_KEY = 'accessToken';
   private readonly REFRESH_TOKEN_KEY = 'refreshToken';
   private readonly USER_KEY = 'currentUser';

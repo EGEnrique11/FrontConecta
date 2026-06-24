@@ -9,7 +9,7 @@ import { ClienteDto, DeudaResponse } from '../models/shared/cliente.model';
 })
 export class ClienteHttpService {
   private http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/v1';
+  private readonly baseUrl = '/api/v1';
 
   buscarClientesPaginados(criterio: string, valor: string, page: number, size: number): Observable<Page<ClienteDto>>{
     let params = new HttpParams()

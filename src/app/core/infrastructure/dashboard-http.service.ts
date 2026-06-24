@@ -16,7 +16,7 @@ import {
 })
 export class DashboardHttpService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/v1/dashboard';
+  private readonly baseUrl = '/api/v1/dashboard';
 
   getResumen(inicio: string, fin: string): Observable<ResumenDashboard> {
     let params = new HttpParams().set('inicio', inicio).set('fin', fin);

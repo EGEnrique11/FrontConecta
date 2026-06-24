@@ -9,7 +9,7 @@ import { ReciboListDTO } from '../models/facturacion/facturacion.model';
 })
 export class FacturacionHttpService {
   private http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/v1';
+  private readonly baseUrl = '/api/v1';
 
   obtenerRecibosPorContrato(contratoId: number, estados: string[], page: number, size: number): Observable<Page<ReciboListDTO>>{
     let params = new HttpParams()

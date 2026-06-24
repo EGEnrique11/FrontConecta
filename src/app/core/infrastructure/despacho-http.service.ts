@@ -8,7 +8,7 @@ import { InstalacionPendienteDTO } from '../models/despacho/despacho.model';
 })
 export class DespachoHttpService {
   private http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/v1';
+  private readonly baseUrl = '/api/v1';
 
   obtenerPendientes(fecha: string, franja: string): Observable<InstalacionPendienteDTO[]> {
     return this.http.get<InstalacionPendienteDTO[]>(`${this.baseUrl}/despacho/pendientes?fecha=${fecha}&franja=${franja}`);
