@@ -1,13 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EmpleadoHttpService {
   private http = inject(HttpClient);
-  private readonly baseUrl = '/api/v1';
+  private readonly baseUrl = environment.apiUrl;
 
   obtenerRoles(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/roles`);

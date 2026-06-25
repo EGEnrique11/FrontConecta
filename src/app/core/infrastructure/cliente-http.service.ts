@@ -3,13 +3,14 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Page } from '../models/shared/page.model';
 import { ClienteDto, DeudaResponse } from '../models/shared/cliente.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ClienteHttpService {
   private http = inject(HttpClient);
-  private readonly baseUrl = '/api/v1';
+  private readonly baseUrl = environment.apiUrl;
 
   buscarClientesPaginados(criterio: string, valor: string, page: number, size: number): Observable<Page<ClienteDto>>{
     let params = new HttpParams()

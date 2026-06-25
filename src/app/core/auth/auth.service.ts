@@ -2,6 +2,7 @@ import { inject, Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, catchError, throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface AuthResponse {
   accessToken: string;
@@ -20,7 +21,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  private readonly API_URL = '/api/v1/auth';
+  private readonly API_URL = environment.apiUrl;
   private readonly ACCESS_TOKEN_KEY = 'accessToken';
   private readonly REFRESH_TOKEN_KEY = 'refreshToken';
   private readonly USER_KEY = 'currentUser';
@@ -43,7 +44,7 @@ export class AuthService {
 
   // Refactored Login Process
   login(credentials: { username: string; password: string }): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials).pipe(
+    return this.http.post<AuthResponse>(`${this.API_URL}/auth/login`, credentials).pipe(
       tap((response) => {
         this.saveSession(response);
       })
@@ -58,7 +59,7 @@ export class AuthService {
       return throwError(() => new Error('No refresh token available in storage'));
     }
 
-    return this.http.post<AuthResponse>(`${this.API_URL}/refresh-token`, { refreshToken: rfToken }).pipe(
+    return this.http.post<AuthResponse>(`${this.API_URL}/auth/refresh-token`, { refreshToken: rfToken }).pipe(
       tap((response) => this.saveSession(response)),
       catchError((error) => {
         this.logout();

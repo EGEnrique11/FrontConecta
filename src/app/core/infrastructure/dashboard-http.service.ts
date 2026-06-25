@@ -10,47 +10,48 @@ import {
     ProductividadTecnica, 
     RendimientoVendedor 
 } from '../models/dashboard.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DashboardHttpService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = '/api/v1/dashboard';
+  private readonly baseUrl = environment.apiUrl;
 
   getResumen(inicio: string, fin: string): Observable<ResumenDashboard> {
     let params = new HttpParams().set('inicio', inicio).set('fin', fin);
-    return this.http.get<ResumenDashboard>(`${this.baseUrl}/resumen`, { params });
+    return this.http.get<ResumenDashboard>(`${this.baseUrl}/dashboard/resumen`, { params });
   }
 
   getFinanzasIngresosVsDeuda(inicio: string, fin: string): Observable<FinanzasDeudaIngreso> {
     let params = new HttpParams().set('inicio', inicio).set('fin', fin);
-    return this.http.get<FinanzasDeudaIngreso>(`${this.baseUrl}/finanzas/ingresos-vs-deuda`, { params });
+    return this.http.get<FinanzasDeudaIngreso>(`${this.baseUrl}/dashboard/finanzas/ingresos-vs-deuda`, { params });
   }
 
   getFinanzasEfectividad(inicio: string, fin: string): Observable<EfectividadMora> {
     let params = new HttpParams().set('inicio', inicio).set('fin', fin);
-    return this.http.get<EfectividadMora>(`${this.baseUrl}/finanzas/efectividad`, { params });
+    return this.http.get<EfectividadMora>(`${this.baseUrl}/dashboard/finanzas/efectividad`, { params });
   }
 
   getOperacionesTasaInstalacion(inicio: string, fin: string): Observable<TasaInstalacion> {
     let params = new HttpParams().set('inicio', inicio).set('fin', fin);
-    return this.http.get<TasaInstalacion>(`${this.baseUrl}/operaciones/tasa-instalacion`, { params });
+    return this.http.get<TasaInstalacion>(`${this.baseUrl}/dashboard/operaciones/tasa-instalacion`, { params });
   }
 
   getRendimientoCrecimiento(inicio: string, fin: string): Observable<CrecimientoMensual[]> {
     let params = new HttpParams().set('inicio', inicio).set('fin', fin);
-    return this.http.get<CrecimientoMensual[]>(`${this.baseUrl}/rendimiento/crecimiento`, { params });
+    return this.http.get<CrecimientoMensual[]>(`${this.baseUrl}/dashboard/rendimiento/crecimiento`, { params });
   }
 
   getOperacionesProductividad(inicio: string, fin: string): Observable<ProductividadTecnica[]> {
     let params = new HttpParams().set('inicio', inicio).set('fin', fin);
-    return this.http.get<ProductividadTecnica[]>(`${this.baseUrl}/operaciones/productividad`, { params });
+    return this.http.get<ProductividadTecnica[]>(`${this.baseUrl}/dashboard/operaciones/productividad`, { params });
   }
 
   getRendimientoVendedores(inicio: string, fin: string): Observable<RendimientoVendedor[]> {
     let params = new HttpParams().set('inicio', inicio).set('fin', fin);
-    return this.http.get<RendimientoVendedor[]>(`${this.baseUrl}/rendimiento/vendedores`, { params });
+    return this.http.get<RendimientoVendedor[]>(`${this.baseUrl}/dashboard/rendimiento/vendedores`, { params });
   }
 
   getInstalacionesEstados(inicio: string, fin: string, estado?: string): Observable<Record<string, number>> {
@@ -58,15 +59,15 @@ export class DashboardHttpService {
     if (estado) {
       params = params.set('estado', estado);
     }
-    return this.http.get<Record<string, number>>(`${this.baseUrl}/operaciones/instalaciones-estados`, { params });
+    return this.http.get<Record<string, number>>(`${this.baseUrl}/dashboard/operaciones/instalaciones-estados`, { params });
   }
 
   // --- Exportación a Excel ---
-  private readonly reportesUrl = 'http://localhost:8080/api/v1/documentos/reportes';
+  //private readonly reportesUrl = 'http://localhost:8080/api/v1/documentos/reportes'; ya no va
 
   exportarProductividadExcel(inicio: string, fin: string): Observable<Blob> {
     let params = new HttpParams().set('inicio', inicio).set('fin', fin);
-    return this.http.get(`${this.reportesUrl}/productividad/excel`, { 
+    return this.http.get(`${this.baseUrl}/documentos/reportes/productividad/excel`, { 
       params, 
       responseType: 'blob' as 'json' 
     }) as unknown as Observable<Blob>;
@@ -74,7 +75,7 @@ export class DashboardHttpService {
 
   exportarVendedoresExcel(inicio: string, fin: string): Observable<Blob> {
     let params = new HttpParams().set('inicio', inicio).set('fin', fin);
-    return this.http.get(`${this.reportesUrl}/vendedores/excel`, { 
+    return this.http.get(`${this.baseUrl}/documentos/reportes/vendedores/excel`, { 
       params, 
       responseType: 'blob' as 'json' 
     }) as unknown as Observable<Blob>;

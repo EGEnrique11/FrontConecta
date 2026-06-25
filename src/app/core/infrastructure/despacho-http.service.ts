@@ -2,13 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { InstalacionPendienteDTO } from '../models/despacho/despacho.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DespachoHttpService {
   private http = inject(HttpClient);
-  private readonly baseUrl = '/api/v1';
+  private readonly baseUrl = environment.apiUrl;
 
   obtenerPendientes(fecha: string, franja: string): Observable<InstalacionPendienteDTO[]> {
     return this.http.get<InstalacionPendienteDTO[]>(`${this.baseUrl}/despacho/pendientes?fecha=${fecha}&franja=${franja}`);

@@ -21,7 +21,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(cloned).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Trigger refresh on 401 HTTP errors, preventing loop with itself
       if (error.status === 401 && !req.url.includes('/refresh-token')) {
         console.warn('[Interceptor] Status 401, engaging Token Refresh mechanism...');
         
